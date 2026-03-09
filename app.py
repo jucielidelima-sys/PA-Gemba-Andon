@@ -1,21 +1,48 @@
+import io
+from datetime import date
+from pathlib import Path
+import base64
+
+import pandas as pd
+import plotly.graph_objects as go
+import streamlit as st
+import streamlit.components.v1 as components
+
+REL_DATA_PATH = Path("data") / "pa.xlsx"
+ASSETS_DIR = Path(__file__).parent / "assets"
+PARETO_BG = ASSETS_DIR / "pareto_bg.png"
+ROBOTIC_BG = ASSETS_DIR / "robotic_bg.png"
+
+st.set_page_config(page_title="PA • Gemba Board ANDON", layout="wide")
+
+def img_to_data_uri(path: Path) -> str:
+    if not path.exists():
+        return ""
+    return "data:image/png;base64," + base64.b64encode(path.read_bytes()).decode("utf-8")
+
+pareto_bg_uri = img_to_data_uri(PARETO_BG)
+robotic_bg_uri = img_to_data_uri(ROBOTIC_BG)
+
+# CSS sem f-string para evitar erro de sintaxe
 st.markdown("""
 <style>
 html, body, .stApp,
 [data-testid="stAppViewContainer"],
 [data-testid="stHeader"],
-[data-testid="stToolbar"]{{
+[data-testid="stToolbar"]{
   background: linear-gradient(180deg, #0B2A52 0%, #0A2040 45%, #081A33 100%) !important;
   color: rgba(255,255,255,0.96) !important;
-}}
-[data-testid="stHeader"]{{background:transparent !important;}}
-*{{color:rgba(255,255,255,0.96);}}
+}
+[data-testid="stHeader"]{background:transparent !important;}
+*{color:rgba(255,255,255,0.96);}
 
-/* fundo limpo em azul gradiente, sem imagem espalhada */
-[data-testid="stAppViewContainer"]{{
+[data-testid="stAppViewContainer"]{
   position: relative !important;
   overflow-x: hidden !important;
-}}
-[data-testid="stAppViewContainer"]::before{{
+}
+
+/* fundo limpo azul gradiente */
+[data-testid="stAppViewContainer"]::before{
   content:"";
   position: fixed;
   inset: 0;
@@ -24,36 +51,36 @@ html, body, .stApp,
     linear-gradient(180deg, #0B2A52 0%, #0A2040 45%, #081A33 100%);
   z-index: 0;
   pointer-events: none;
-}}
+}
 
-/* braços robóticos laterais fortes, sem poluir o centro */
-[data-testid="stAppViewContainer"]::after{{
+/* braços robóticos laterais */
+[data-testid="stAppViewContainer"]::after{
   content:"";
   position: fixed;
   inset: 0;
   background:
-    url("{robotic_bg_uri}") left center / 28% auto no-repeat,
-    url("{robotic_bg_uri}") right center / 28% auto no-repeat;
+    left center / 28% auto no-repeat,
+    right center / 28% auto no-repeat;
   filter: saturate(1.55) hue-rotate(-22deg) contrast(1.18) brightness(1.02);
   opacity: 0.50;
   mix-blend-mode: screen;
   z-index: 0;
   pointer-events: none;
-}}
+}
 
 [data-testid="stAppViewContainer"] > .main,
-.block-container{{
+.block-container{
   position: relative;
   z-index: 1;
-}}
+}
 
 [data-testid="stSidebar"],
-[data-testid="stSidebarContent"]{{
+[data-testid="stSidebarContent"]{
   background: linear-gradient(180deg, rgba(10,28,56,0.96), rgba(8,20,40,0.98));
-  border-right:1px solid rgba(120,220,255,0.18);
-}}
+  border-right:1px solid rgba(140,220,255,0.18);
+}
 
-:root{{
+:root{
   --bg:#0B2A52;
   --panel:#12315D;
   --panel2:#163A6D;
@@ -67,47 +94,47 @@ html, body, .stApp,
   --bad:#FF5C78;
   --info:#74BFFF;
   --safety:#FFE06A;
-}}
+}
 
-.block-container{{padding-top:1rem; padding-bottom:2rem; max-width:1800px;}}
+.block-container{padding-top:1rem; padding-bottom:2rem; max-width:1800px;}
 
-div[data-baseweb="select"]{{
+div[data-baseweb="select"]{
   background: linear-gradient(180deg,#365988,#223A61) !important;
   border-radius:10px !important;
-}}
-div[data-baseweb="select"] > div{{
+}
+div[data-baseweb="select"] > div{
   background: linear-gradient(180deg,#365988,#223A61) !important;
   border:1px solid rgba(140,220,255,0.14) !important;
-}}
-span[data-baseweb="tag"]{{
+}
+span[data-baseweb="tag"]{
   background:#49CFFF !important;
   color:#071424 !important;
   border:none !important;
   font-weight:700 !important;
-}}
+}
 
-div[data-testid="stDataFrame"]{{
+div[data-testid="stDataFrame"]{
   background: linear-gradient(180deg, rgba(45,75,115,0.96), rgba(28,48,79,0.96)) !important;
   border:1px solid rgba(140,220,255,0.18) !important;
   border-radius:14px !important;
   padding:6px !important;
-}}
+}
 div[data-testid="stDataFrame"] .ag-root-wrapper,
 div[data-testid="stDataFrame"] .ag-root,
 div[data-testid="stDataFrame"] .ag-body-viewport,
 div[data-testid="stDataFrame"] .ag-header,
 div[data-testid="stDataFrame"] .ag-center-cols-container,
-div[data-testid="stDataFrame"] .ag-row{{
+div[data-testid="stDataFrame"] .ag-row{
   background: linear-gradient(180deg, rgba(45,75,115,0.96), rgba(28,48,79,0.96)) !important;
-}}
+}
 div[data-testid="stDataFrame"] .ag-header-cell,
-div[data-testid="stDataFrame"] .ag-cell{{
+div[data-testid="stDataFrame"] .ag-cell{
   color: rgba(255,255,255,0.96) !important;
   border-color: rgba(140,220,255,0.10) !important;
-}}
-div[data-testid="stDataFrame"] .ag-row:hover{{ background:#27456e !important; }}
+}
+div[data-testid="stDataFrame"] .ag-row:hover{ background:#27456e !important; }
 
-.titlebar{{
+.titlebar{
   border:1px solid var(--line);
   border-radius:18px;
   padding:16px 18px;
@@ -116,8 +143,8 @@ div[data-testid="stDataFrame"] .ag-row:hover{{ background:#27456e !important; }}
     linear-gradient(180deg, rgba(18,49,93,0.88), rgba(10,32,64,0.82));
   position:relative;
   overflow:hidden;
-}}
-.titlebar:after{{
+}
+.titlebar:after{
   content:"";
   position:absolute;
   left:-50%;
@@ -126,24 +153,24 @@ div[data-testid="stDataFrame"] .ag-row:hover{{ background:#27456e !important; }}
   height:2px;
   background: linear-gradient(90deg, rgba(68,200,255,0), rgba(117,233,255,1), rgba(68,200,255,0));
   opacity:0.9;
-}}
-.big-title{{font-size:34px; font-weight:1000; letter-spacing:1px; text-transform:uppercase; text-shadow:0 0 22px rgba(117,233,255,0.35);}}
-.subtitle{{color:var(--muted); font-size:12px; margin-top:4px;}}
+}
+.big-title{font-size:34px; font-weight:1000; letter-spacing:1px; text-transform:uppercase; text-shadow:0 0 22px rgba(117,233,255,0.35);}
+.subtitle{color:var(--muted); font-size:12px; margin-top:4px;}
 
-.badge{{
+.badge{
   display:inline-flex; align-items:center; gap:8px;
   padding:6px 10px; border-radius:999px;
   font-size:12px; border:1px solid var(--line);
   background: rgba(255,255,255,0.05); color:var(--muted);
-}}
-.dot{{width:9px; height:9px; border-radius:999px; display:inline-block;}}
-.dot.good{{background:var(--good);}}
-.dot.warn{{background:var(--warn);}}
-.dot.bad{{background:var(--bad);}}
-.dot.info{{background:var(--info);}}
-.dot.neon{{background:var(--neon); box-shadow:0 0 12px rgba(117,233,255,0.85);}}
+}
+.dot{width:9px; height:9px; border-radius:999px; display:inline-block;}
+.dot.good{background:var(--good);}
+.dot.warn{background:var(--warn);}
+.dot.bad{background:var(--bad);}
+.dot.info{background:var(--info);}
+.dot.neon{background:var(--neon); box-shadow:0 0 12px rgba(117,233,255,0.85);}
 
-.kpi{{
+.kpi{
   border:1px solid var(--line);
   border-radius:16px;
   padding:14px 16px;
@@ -151,12 +178,12 @@ div[data-testid="stDataFrame"] .ag-row:hover{{ background:#27456e !important; }}
     radial-gradient(500px 180px at 0% 0%, rgba(68,200,255,0.12), rgba(0,0,0,0)),
     linear-gradient(180deg, rgba(255,255,255,0.04), rgba(0,0,0,0)),
     rgba(18,49,93,0.70);
-}}
-.kpi .label{{color:var(--muted2); font-size:12px;}}
-.kpi .value{{font-size:30px; font-weight:1000; margin-top:4px;}}
-.kpi .sub{{color:var(--muted2); font-size:12px; margin-top:4px;}}
+}
+.kpi .label{color:var(--muted2); font-size:12px;}
+.kpi .value{font-size:30px; font-weight:1000; margin-top:4px;}
+.kpi .sub{color:var(--muted2); font-size:12px; margin-top:4px;}
 
-.hud{{
+.hud{
   border-radius:22px;
   border:1px solid rgba(140,220,255,0.18);
   background:
@@ -169,56 +196,67 @@ div[data-testid="stDataFrame"] .ag-row:hover{{ background:#27456e !important; }}
   padding: 12px 12px 8px 12px;
   overflow: hidden;
   box-shadow: 0 0 0 1px rgba(68,200,255,0.10) inset, 0 16px 34px rgba(0,0,0,0.50);
-}}
-.hud:before{{
+}
+.hud:before{
   content:"";
   position:absolute;
   inset:0;
   background: radial-gradient(circle at 50% 45%, rgba(68,200,255,0.10), rgba(0,0,0,0) 58%);
   animation: pulseGlow 2.4s infinite ease-in-out;
   pointer-events:none;
-}}
-@keyframes pulseGlow {{
-  0% {{ opacity:0.55; transform:scale(1); }}
-  50% {{ opacity:1.00; transform:scale(1.02); }}
-  100% {{ opacity:0.55; transform:scale(1); }}
-}}
+}
+@keyframes pulseGlow {
+  0% { opacity:0.55; transform:scale(1); }
+  50% { opacity:1.00; transform:scale(1.02); }
+  100% { opacity:0.55; transform:scale(1); }
+}
 
-.card{{
+.card{
   border:1px solid rgba(140,220,255,0.14);
   border-left:5px solid rgba(255,255,255,0.25);
   border-radius:16px;
   padding:12px 12px;
   background: rgba(18,49,93,0.76);
   box-shadow:0 10px 22px rgba(0,0,0,0.40);
-}}
-.card.open{{ border-left-color: var(--info); }}
-.card.run{{ border-left-color: var(--warn); }}
-.card.late{{ border-left-color: var(--bad); }}
-.card.done{{ border-left-color: var(--good); }}
-.card-title{{font-weight:900; margin-bottom:6px; color:rgba(255,255,255,0.98);}}
-.card-small{{color:var(--muted2); font-size:12px;}}
+}
+.card.open{ border-left-color: var(--info); }
+.card.run{ border-left-color: var(--warn); }
+.card.late{ border-left-color: var(--bad); }
+.card.done{ border-left-color: var(--good); }
+.card-title{font-weight:900; margin-bottom:6px; color:rgba(255,255,255,0.98);}
+.card-small{color:var(--muted2); font-size:12px;}
 
-.robot-section{{
+.robot-section{
   border:1px solid rgba(140,220,255,0.16);
   border-radius:18px;
   background: linear-gradient(180deg, rgba(18,49,93,0.76), rgba(10,32,64,0.72));
   padding: 12px;
-}}
+}
 
-.pareto-panel{{
+.pareto-panel{
   border:1px solid rgba(140,220,255,0.16);
   border-radius:18px;
   background:
-    linear-gradient(180deg, rgba(18,49,93,0.22), rgba(10,32,64,0.30)),
-    url("{pareto_bg_uri}");
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  background-blend-mode: screen;
+    linear-gradient(180deg, rgba(18,49,93,0.22), rgba(10,32,64,0.30));
   padding: 8px 10px 2px 10px;
-}}
-""", unsafe_allow_html=True)STATUS_MAP = {
+}
+</style>
+""", unsafe_allow_html=True)
+
+# aplicar fundos via JS para permitir data URI sem f-string no CSS
+components.html(f"""
+<script>
+const styleTargets = () => {{
+  const app = window.parent.document.querySelector('[data-testid="stAppViewContainer"]');
+  if (app) {{
+    app.style.setProperty('--robot-bg-left', 'url("{robotic_bg_uri}")');
+  }}
+}};
+styleTargets();
+</script>
+""", height=0)
+
+STATUS_MAP = {
     "executado": "Executado",
     "em execução": "Em execução",
     "em execucao": "Em execução",
@@ -231,12 +269,12 @@ div[data-testid="stDataFrame"] .ag-row:hover{{ background:#27456e !important; }}
     "stand by": "Em espera",
 }
 CLOSED_STATUSES = {"Executado", "Cancelada"}
-NEON = "#6FE8FF"
-GOOD = "#3BEA8B"
-WARN = "#FFB547"
-BAD = "#FF4567"
-SAFETY = "#FFD95C"
-AI_BLUE = "#32C8FF"
+NEON = "#75E9FF"
+GOOD = "#46E79B"
+WARN = "#FFC25C"
+BAD = "#FF5C78"
+SAFETY = "#FFE06A"
+AI_BLUE = "#44C8FF"
 
 def _norm(s: str) -> str:
     return str(s).strip()
@@ -300,6 +338,7 @@ def led_gauge(value: float, label: str, bad_th: float, warn_th: float, segments:
     r_outer = 1.0
     thickness = 0.22
     r_inner = r_outer - thickness
+
     fig = go.Figure()
     fig.add_trace(go.Barpolar(r=[thickness]*segments, theta=theta, width=[width*0.92]*segments, base=[r_inner]*segments,
                               marker_color=inactive_cols, marker_line_color="rgba(255,255,255,0.05)", marker_line_width=1, hoverinfo="skip"))
@@ -316,7 +355,7 @@ def led_gauge(value: float, label: str, bad_th: float, warn_th: float, segments:
     fig.add_annotation(x=0.5, y=0.42, xref="paper", yref="paper",
                        text=f"<span style='font-size:58px; font-weight:1000; color:rgba(255,255,255,0.98);'>{v:.0f}%</span>", showarrow=False)
     fig.add_annotation(x=0.5, y=0.29, xref="paper", yref="paper",
-                       text=f"<span style='font-size:13px; color:rgba(220,245,255,0.72); letter-spacing:0.6px; text-transform:uppercase;'>{label}</span>", showarrow=False)
+                       text=f"<span style='font-size:13px; color:rgba(230,245,255,0.72); letter-spacing:0.6px; text-transform:uppercase;'>{label}</span>", showarrow=False)
     fig.update_layout(height=360, margin=dict(l=10,r=10,t=10,b=0), paper_bgcolor="rgba(0,0,0,0)",
                       plot_bgcolor="rgba(0,0,0,0)", showlegend=False,
                       polar=dict(bgcolor="rgba(0,0,0,0)", radialaxis=dict(visible=False, range=[0,1.1]),
@@ -327,7 +366,7 @@ def render_hud(fig, title: str, subtitle: str = "", height: int = 455):
     html = fig.to_html(include_plotlyjs="cdn", full_html=False, config={"displayModeBar": False})
     components.html(
         f"<div class='hud'><div style='font-weight:1000; margin:2px 0 4px 6px; text-transform:uppercase;'>{title}</div>"
-        f"<div style='margin:0 0 10px 6px; color:rgba(220,245,255,0.58); font-size:12px;'>{subtitle}</div>"
+        f"<div style='margin:0 0 10px 6px; color:rgba(230,245,255,0.58); font-size:12px;'>{subtitle}</div>"
         f"<div style='height:{height-88}px; margin-top:-10px;'>{html}</div></div>",
         height=height, scrolling=False
     )
@@ -339,30 +378,26 @@ def pareto_chart(df: pd.DataFrame, col: str, title: str):
     g[col] = g[col].fillna("—").astype(str)
     total = g["Qtd"].sum()
     g["Acumulado_%"] = (g["Qtd"].cumsum() / total) * 100 if total else 0
+
     fig = go.Figure()
     fig.add_trace(go.Bar(
         x=g[col], y=g["Qtd"], name="Qtd",
-        marker=dict(color=AI_BLUE, line=dict(color="#9BEFFF", width=1)), opacity=0.95
+        marker=dict(color=AI_BLUE, line=dict(color="#B7F1FF", width=1.2)), opacity=0.96
     ))
     fig.add_trace(go.Scatter(
         x=g[col], y=g["Acumulado_%"], name="Acumulado %",
         mode="lines+markers", yaxis="y2",
-        line=dict(color="#FFD95C", width=3),
-        marker=dict(size=8, color="#FFD95C")
+        line=dict(color="#FFE06A", width=3),
+        marker=dict(size=8, color="#FFE06A")
     ))
     if pareto_bg_uri:
-        fig.add_layout_image(
-            dict(
-                source=pareto_bg_uri,
-                xref="paper", yref="paper",
-                x=1.0, y=1.0,
-                sizex=1.0, sizey=1.0,
-                xanchor="right", yanchor="top",
-                sizing="stretch",
-                opacity=0.28,
-                layer="below"
-            )
-        )
+        fig.add_layout_image(dict(
+            source=pareto_bg_uri,
+            xref="paper", yref="paper",
+            x=1.0, y=1.0, sizex=1.0, sizey=1.0,
+            xanchor="right", yanchor="top",
+            sizing="stretch", opacity=0.28, layer="below"
+        ))
     fig.update_layout(
         title=title, paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(11,42,82,0.18)",
         font=dict(color="white"), margin=dict(l=10, r=10, t=45, b=10), height=380,
@@ -431,6 +466,28 @@ meta = payload["meta"]
 table = payload["table"].copy()
 excel_path_used = payload.get("excel_path", "—")
 
+# aplica imagens dos braços via JS em toda a tela
+components.html(f"""
+<script>
+const applyBg = () => {{
+  const doc = window.parent.document;
+  const app = doc.querySelector('[data-testid="stAppViewContainer"]');
+  if (app) {{
+    const style = window.parent.document.createElement('style');
+    style.innerHTML = `
+      [data-testid="stAppViewContainer"]::after {{
+        background:
+          url("{robotic_bg_uri}") left center / 28% auto no-repeat,
+          url("{robotic_bg_uri}") right center / 28% auto no-repeat !important;
+      }}
+    `;
+    doc.head.appendChild(style);
+  }}
+}};
+applyBg();
+</script>
+""", height=0)
+
 with st.sidebar:
     st.markdown("### ⚙️ Filtros")
     st.markdown(pill("neon", "Fonte fixa: data/pa.xlsx"), unsafe_allow_html=True)
@@ -493,37 +550,6 @@ st.markdown(f"""
   </div>
 </div>
 """, unsafe_allow_html=True)
-
-st.markdown(f"""
-<div style="
-  position: relative;
-  margin-top: 10px;
-  margin-bottom: 4px;
-  height: 180px;
-  border-radius: 18px;
-  overflow: hidden;
-  border: 1px solid rgba(120,220,255,0.18);
-  background:
-    linear-gradient(90deg, rgba(8,18,37,0.22), rgba(8,18,37,0.48)),
-    url('{robotic_bg_uri}');
-  background-size: cover;
-  background-position: center;
-  background-blend-mode: screen;
-">
-  <div style="
-    position:absolute; inset:0;
-    background: linear-gradient(180deg, rgba(50,200,255,0.08), rgba(0,0,0,0.18));
-  "></div>
-  <div style="
-    position:absolute; left:24px; bottom:22px;
-    font-size:28px; font-weight:1000; letter-spacing:0.5px;
-    text-shadow:0 0 18px rgba(111,232,255,0.35);
-  ">
-    INDÚSTRIA 4.0 • MONITORAMENTO INTELIGENTE
-  </div>
-</div>
-""", unsafe_allow_html=True)
-
 
 if m["overdue"] > 0:
     st.error(f"🔴 ANDON: {m['overdue']} ação(ões) com PRAZO VENCIDO no filtro atual.")
@@ -633,14 +659,4 @@ def render_col(df, container, title, dot, status_value, css_class):
                 unsafe_allow_html=True
             )
 
-for title, dot, cont, status_value, css_class in board:
-    render_col(f, cont, title, dot, status_value, css_class)
-
-st.divider()
-st.subheader("Lista completa (filtro aplicado)")
-show_cols = [x for x in ["Causa","Ação","Indicador","Setor","Responsável","Prazo","Status","Dias_para_prazo"] if x in f.columns]
-st.dataframe(f[show_cols], use_container_width=True, height=560)
-
-st.subheader("Exportar")
-csv = f.to_csv(index=False).encode("utf-8-sig")
-st.download_button("⬇️ Baixar CSV (filtro aplicado)", data=csv, file_name="pa_filtrado.csv", mime="text/csv")
+for title, dot, cont, status_value, css_class in boar
