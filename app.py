@@ -1,19 +1,30 @@
-
 import io
 from datetime import date
+from pathlib import Path
+
 import pandas as pd
-import streamlit as st
 import plotly.graph_objects as go
-import plotly.express as px
+import streamlit as st
+import streamlit.components.v1 as components
 
-DATA_PATH = "data/pa.xlsx"  # fonte fixa (sem upload)
+# ==========================================
+# PA • GEMBA BOARD ANDON
+# Fonte fixa: data/pa.xlsx
+# ==========================================
 
-st.set_page_config(page_title="PA • Gemba Board ANDON", layout="wide")
+REL_DATA_PATH = Path("data") / "pa.xlsx"
 
-st.markdown("""
+st.set_page_config(
+    page_title="PA • Gemba Board ANDON",
+    layout="wide",
+)
+
+# ==========================================
+# TEMA / ESTILO
+# ==========================================
+st.markdown(
+    """
 <style>
-
-/* FUNDO PRETO AZULADO INDUSTRIAL */
 html, body, .stApp,
 [data-testid="stAppViewContainer"],
 [data-testid="stHeader"],
@@ -22,44 +33,74 @@ html, body, .stApp,
   color: rgba(255,255,255,0.96) !important;
 }
 
-/* HEADER */
 [data-testid="stHeader"]{
   background:transparent !important;
 }
 
-/* SIDEBAR */
+*{
+  color: rgba(255,255,255,0.96);
+}
+
 [data-testid="stSidebar"],
 [data-testid="stSidebarContent"]{
   background:#0D1428 !important;
+  color: rgba(255,255,255,0.94) !important;
   border-right:1px solid rgba(255,255,255,0.10);
 }
 
-/* VARIÁVEIS VISUAIS */
 :root{
-  --bg: #0A0F1F;
-  --panel: #121A33;
-
-  --line: rgba(255,255,255,0.10);
-  --muted: rgba(255,255,255,0.70);
-  --muted2: rgba(255,255,255,0.60);
+  --bg:#0A0F1F;
+  --bg2:#0D1428;
+  --panel:#121A33;
+  --panel2:#1A223D;
+  --line:rgba(255,255,255,0.10);
+  --muted:rgba(255,255,255,0.72);
+  --muted2:rgba(255,255,255,0.60);
 
   --neon:#00E5FF;
+  --ai:#00C6FF;
   --good:#00C853;
   --warn:#FF9100;
   --bad:#FF1744;
   --info:#40C4FF;
+  --safety:#FFD60A;
 }
 
-/* CONTAINER */
 .block-container{
-  max-width:1750px;
+  padding-top:1rem;
+  padding-bottom:2rem;
+  max-width:1800px;
+}
+
+/* SELECTS / FILTROS */
+div[data-baseweb="select"]{
+  background: linear-gradient(180deg,#2A2F3A,#1B1F28) !important;
+  border-radius:10px !important;
+}
+
+div[data-baseweb="select"] > div{
+  background: linear-gradient(180deg,#2A2F3A,#1B1F28) !important;
+  border:1px solid rgba(255,255,255,0.08) !important;
+}
+
+span[data-baseweb="tag"]{
+  background:#FF5A5F !important;
+  color:white !important;
+  border:none !important;
+}
+
+/* CHECKBOX / DATE INPUT */
+[data-testid="stDateInput"] > div,
+[data-testid="stCheckbox"]{
+  color:white !important;
 }
 
 /* DATAFRAME */
 div[data-testid="stDataFrame"]{
-  background:#0A0F1F !important;
+  background: linear-gradient(180deg,#2C313C,#1E222B) !important;
   border:1px solid rgba(255,255,255,0.12) !important;
   border-radius:14px !important;
+  padding:6px !important;
 }
 
 div[data-testid="stDataFrame"] .ag-root-wrapper,
@@ -68,82 +109,170 @@ div[data-testid="stDataFrame"] .ag-body-viewport,
 div[data-testid="stDataFrame"] .ag-header,
 div[data-testid="stDataFrame"] .ag-center-cols-container,
 div[data-testid="stDataFrame"] .ag-row{
-  background:#0A0F1F !important;
+  background: linear-gradient(180deg,#2C313C,#1E222B) !important;
+}
+
+div[data-testid="stDataFrame"] .ag-header-cell,
+div[data-testid="stDataFrame"] .ag-cell{
+  color: rgba(255,255,255,0.94) !important;
+  border-color: rgba(255,255,255,0.10) !important;
 }
 
 div[data-testid="stDataFrame"] .ag-row:hover{
-  background:#121A33 !important;
-}
-
-/* TITLE BAR */
-.titlebar{
-  border:1px solid rgba(255,255,255,0.10);
-  border-radius:18px;
-  padding:16px 18px;
-  background:
-  radial-gradient(900px 260px at 0% 0%, rgba(0,229,255,0.18), rgba(0,0,0,0)),
-  linear-gradient(180deg, #121A33, #0A0F1F);
-}
-
-/* CARDS */
-.card{
-  border:1px solid rgba(255,255,255,0.12);
-  border-radius:16px;
-  padding:12px;
-  background:#121A33;
-}
-
-/* KPIs */
-.kpi{
-  border:1px solid rgba(255,255,255,0.10);
-  border-radius:16px;
-  padding:14px;
-  background:#121A33;
-}
-
-/* HUD VELOCÍMETRO */
-.hud{
-  border-radius:22px;
-  border:1px solid rgba(255,255,255,0.10);
-  background:#121A33;
-  backdrop-filter: blur(10px);
-}
-
-</style>
-""", unsafe_allow_html=True)
-/* MULTISELECT / FILTROS */
-div[data-baseweb="select"]{
-  background: linear-gradient(180deg,#2a2f3a,#1b1f28) !important;
-  border-radius:8px;
-}
-
-/* CAIXA DO SELECT */
-div[data-baseweb="select"] > div{
-  background: linear-gradient(180deg,#2a2f3a,#1b1f28) !important;
-}
-
-/* TAGS DOS FILTROS */
-span[data-baseweb="tag"]{
-  background:#3a404c !important;
-  color:white !important;
-}
-
-/* TABELAS */
-div[data-testid="stDataFrame"]{
-  background: linear-gradient(180deg,#2c313c,#1e222b) !important;
-  border-radius:12px !important;
-}
-
-/* LINHAS DA TABELA */
-.ag-row{
-  background: linear-gradient(180deg,#2c313c,#1e222b) !important;
-}
-
-/* HOVER */
-.ag-row:hover{
   background:#323844 !important;
 }
 
+/* HEADER PRINCIPAL */
+.titlebar{
+  border:1px solid var(--line);
+  border-radius:18px;
+  padding:16px 18px;
+  background:
+    radial-gradient(900px 260px at 0% 0%, rgba(0,229,255,0.18), rgba(0,0,0,0)),
+    radial-gradient(700px 220px at 100% 0%, rgba(255,214,10,0.14), rgba(0,0,0,0)),
+    linear-gradient(180deg, #121A33, #0A0F1F);
+  position:relative;
+  overflow:hidden;
+}
+.titlebar:after{
+  content:"";
+  position:absolute;
+  left:-50%;
+  top:0;
+  width:200%;
+  height:2px;
+  background: linear-gradient(90deg, rgba(0,229,255,0), rgba(0,229,255,0.95), rgba(0,229,255,0));
+  opacity:0.85;
+}
+.big-title{
+  font-size:34px;
+  font-weight:1000;
+  letter-spacing:1px;
+  text-transform:uppercase;
+  text-shadow:0 0 24px rgba(0,229,255,0.28);
+}
+.subtitle{
+  color:var(--muted);
+  font-size:12px;
+  margin-top:4px;
+}
+
+.badge{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:6px 10px;
+  border-radius:999px;
+  font-size:12px;
+  border:1px solid var(--line);
+  background: rgba(255,255,255,0.04);
+  color:var(--muted);
+}
+.dot{
+  width:9px;
+  height:9px;
+  border-radius:999px;
+  display:inline-block;
+}
+.dot.good{background:var(--good);}
+.dot.warn{background:var(--warn);}
+.dot.bad{background:var(--bad);}
+.dot.info{background:var(--info);}
+.dot.neon{
+  background:var(--neon);
+  box-shadow:0 0 12px rgba(0,229,255,0.75);
+}
+
+/* KPI */
+.kpi{
+  border:1px solid var(--line);
+  border-radius:16px;
+  padding:14px 16px;
+  background:
+    radial-gradient(500px 180px at 0% 0%, rgba(0,229,255,0.10), rgba(0,0,0,0)),
+    linear-gradient(180deg, rgba(255,214,10,0.06), rgba(0,0,0,0)),
+    rgba(18,26,51,0.58);
+}
+.kpi .label{
+  color:var(--muted2);
+  font-size:12px;
+}
+.kpi .value{
+  font-size:30px;
+  font-weight:1000;
+  margin-top:4px;
+}
+.kpi .sub{
+  color:var(--muted2);
+  font-size:12px;
+  margin-top:4px;
+}
+
+/* HUD / GAUGE */
+.hud{
+  border-radius:22px;
+  border:1px solid rgba(255,255,255,0.12);
+  background:
+    radial-gradient(520px 220px at 0% 0%, rgba(0,229,255,0.18), rgba(0,0,0,0)),
+    radial-gradient(520px 220px at 100% 100%, rgba(255,214,10,0.10), rgba(0,0,0,0)),
+    rgba(255,255,255,0.04);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  position: relative;
+  padding: 12px 12px 8px 12px;
+  overflow: hidden;
+  box-shadow:
+    0 0 0 1px rgba(0,229,255,0.10) inset,
+    0 16px 34px rgba(0,0,0,0.60);
+}
+
+.hud:before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background: radial-gradient(circle at 50% 45%, rgba(0,229,255,0.07), rgba(0,0,0,0) 58%);
+  animation: pulseGlow 2.6s infinite ease-in-out;
+  pointer-events:none;
+}
+
+@keyframes pulseGlow {
+  0%   { opacity:0.55; transform:scale(1); }
+  50%  { opacity:1.00; transform:scale(1.02); }
+  100% { opacity:0.55; transform:scale(1); }
+}
+
+/* KANBAN */
+.card{
+  border:1px solid rgba(255,255,255,0.12);
+  border-left:5px solid rgba(255,255,255,0.25);
+  border-radius:16px;
+  padding:12px 12px;
+  background: rgba(18,26,51,0.66);
+  box-shadow:0 10px 22px rgba(0,0,0,0.55);
+}
+
+.card.open   { border-left-color: var(--info); }
+.card.run    { border-left-color: var(--warn); }
+.card.late   { border-left-color: var(--bad); }
+.card.done   { border-left-color: var(--good); }
+
+.card-title{
+  font-weight:900;
+  margin-bottom:6px;
+  color: rgba(255,255,255,0.98);
+}
+.card-small{
+  color:var(--muted2);
+  font-size:12px;
+}
+</style>
+""",
+    unsafe_allow_html=True,
+)
+
+# ==========================================
+# HELPERS
+# ==========================================
 STATUS_MAP = {
     "executado": "Executado",
     "em execução": "Em execução",
@@ -158,6 +287,13 @@ STATUS_MAP = {
 }
 CLOSED_STATUSES = {"Executado", "Cancelada"}
 
+NEON = "#00E5FF"
+GOOD = "#00C853"
+WARN = "#FF9100"
+BAD = "#FF1744"
+SAFETY = "#FFD60A"
+AI_BLUE = "#00C6FF"
+
 def _norm(s: str) -> str:
     return str(s).strip()
 
@@ -168,9 +304,263 @@ def _norm_status(s: str) -> str:
     key = s0.lower().split("(")[0].strip()
     return STATUS_MAP.get(key, s0.split("(")[0].strip())
 
+def _rgba(hex_color: str, alpha: float) -> str:
+    c = hex_color.lstrip("#")
+    r = int(c[0:2], 16)
+    g = int(c[2:4], 16)
+    b = int(c[4:6], 16)
+    return f"rgba({r},{g},{b},{alpha})"
+
+def pill(dot_class: str, text: str) -> str:
+    return f'<span class="badge"><span class="dot {dot_class}"></span>{text}</span>'
+
+def resolve_data_path() -> Path:
+    app_dir = Path(__file__).parent
+    expected = (app_dir / REL_DATA_PATH).resolve()
+    data_dir = app_dir / "data"
+
+    if data_dir.exists() and data_dir.is_file():
+        raise RuntimeError(
+            "Erro: existe um ARQUIVO chamado 'data'. "
+            "Apague esse arquivo e crie a pasta 'data/' com 'pa.xlsx'."
+        )
+
+    if expected.exists() and expected.is_file():
+        return expected
+
+    if data_dir.exists() and data_dir.is_dir():
+        cands = sorted([x for x in data_dir.glob("*.xlsx") if x.is_file()])
+        if cands:
+            return cands[0]
+
+    cands = sorted([x for x in app_dir.glob("*.xlsx") if x.is_file()])
+    if cands:
+        return cands[0]
+
+    listing = [x.name + ("/" if x.is_dir() else "") for x in sorted(app_dir.iterdir(), key=lambda z: z.name.lower())]
+    raise FileNotFoundError(
+        "Não encontrei o Excel. Esperado: 'data/pa.xlsx'.\n"
+        f"Diretório do app: {app_dir}\n"
+        f"Conteúdo: {listing}\n"
+        "Coloque o arquivo em 'data/pa.xlsx' e faça commit/push."
+    )
+
+def compute_metrics(df: pd.DataFrame) -> dict:
+    total = len(df)
+    s = df["Status"] if "Status" in df.columns else pd.Series([], dtype=str)
+
+    execd = int((s == "Executado").sum())
+    running = int((s == "Em execução").sum())
+    open_ = int((s == "Aberta").sum())
+    overdue = int(df["Atrasada_calc"].sum()) if "Atrasada_calc" in df.columns else 0
+
+    completion = (execd / total * 100) if total else 0.0
+    denom = max(total, 1)
+    penalty = (overdue / denom) * 100 * 0.60
+    health = max(0.0, min(100.0, completion - penalty))
+
+    return {
+        "total": total,
+        "execd": execd,
+        "running": running,
+        "open": open_,
+        "overdue": overdue,
+        "completion": completion,
+        "penalty": penalty,
+        "health": health,
+    }
+
+# ==========================================
+# GRÁFICOS
+# ==========================================
+def led_gauge(value: float, label: str, bad_th: float, warn_th: float, segments: int = 28):
+    v = float(max(0.0, min(100.0, value)))
+
+    start_deg = 210
+    sweep_deg = 240
+    width = sweep_deg / segments
+    theta = [start_deg - (sweep_deg * i / segments) for i in range(segments)]
+    seg_vals = [100.0 * i / segments for i in range(segments)]
+    active = [sv < v for sv in seg_vals]
+
+    zone_colors = []
+    for sv in seg_vals:
+        if sv < bad_th:
+            zone_colors.append(BAD)
+        elif sv < warn_th:
+            zone_colors.append(WARN)
+        else:
+            zone_colors.append(GOOD)
+
+    inactive_cols = [_rgba(c, 0.18) for c in zone_colors]
+    active_cols_neon = [_rgba(NEON, 0.92) if a else "rgba(0,0,0,0)" for a in active]
+    active_cols_zone = [_rgba(c, 0.35) if a else "rgba(0,0,0,0)" for a, c in zip(active, zone_colors)]
+
+    r_outer = 1.0
+    thickness = 0.22
+    r_inner = r_outer - thickness
+
+    fig = go.Figure()
+
+    fig.add_trace(go.Barpolar(
+        r=[thickness] * segments,
+        theta=theta,
+        width=[width * 0.92] * segments,
+        base=[r_inner] * segments,
+        marker_color=inactive_cols,
+        marker_line_color="rgba(255,255,255,0.05)",
+        marker_line_width=1,
+        hoverinfo="skip",
+    ))
+    fig.add_trace(go.Barpolar(
+        r=[thickness * 0.98] * segments,
+        theta=theta,
+        width=[width * 0.92] * segments,
+        base=[r_inner] * segments,
+        marker_color=active_cols_zone,
+        marker_line_color="rgba(255,255,255,0.00)",
+        hoverinfo="skip",
+    ))
+    fig.add_trace(go.Barpolar(
+        r=[thickness * 1.06] * segments,
+        theta=theta,
+        width=[width * 0.86] * segments,
+        base=[r_inner - 0.01] * segments,
+        marker_color=active_cols_neon,
+        marker_line_color=_rgba(NEON, 0.22),
+        marker_line_width=1,
+        hoverinfo="skip",
+    ))
+
+    needle_deg = start_deg - (v / 100.0) * sweep_deg
+    fig.add_trace(go.Scatterpolar(
+        r=[0.0, r_inner + thickness * 0.85],
+        theta=[needle_deg, needle_deg],
+        mode="lines",
+        line=dict(color=_rgba(SAFETY, 0.95), width=6),
+        hoverinfo="skip",
+    ))
+    fig.add_trace(go.Scatterpolar(
+        r=[0.0],
+        theta=[0],
+        mode="markers",
+        marker=dict(
+            size=18,
+            color="rgba(0,0,0,0.65)",
+            line=dict(color=_rgba(NEON, 0.38), width=3),
+        ),
+        hoverinfo="skip",
+    ))
+
+    fig.add_annotation(
+        x=0.5,
+        y=0.42,
+        xref="paper",
+        yref="paper",
+        text=f"<span style='font-size:58px; font-weight:1000; color:rgba(255,255,255,0.98);'>{v:.0f}%</span>",
+        showarrow=False,
+    )
+    fig.add_annotation(
+        x=0.5,
+        y=0.29,
+        xref="paper",
+        yref="paper",
+        text=f"<span style='font-size:13px; color:rgba(255,255,255,0.70); letter-spacing:0.6px; text-transform:uppercase;'>{label}</span>",
+        showarrow=False,
+    )
+
+    fig.update_layout(
+        height=360,
+        margin=dict(l=10, r=10, t=10, b=0),
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)",
+        showlegend=False,
+        polar=dict(
+            bgcolor="rgba(0,0,0,0)",
+            radialaxis=dict(visible=False, range=[0, 1.1]),
+            angularaxis=dict(visible=False),
+        ),
+    )
+    return fig
+
+def render_hud(fig, title: str, subtitle: str = "", height: int = 455):
+    html = fig.to_html(include_plotlyjs="cdn", full_html=False, config={"displayModeBar": False})
+    components.html(
+        f"""
+<div class="hud">
+  <div style="font-weight:1000; margin:2px 0 4px 6px; text-transform:uppercase;">{title}</div>
+  <div style="margin:0 0 10px 6px; color:rgba(255,255,255,0.60); font-size:12px;">{subtitle}</div>
+  <div style="height:{height-88}px; margin-top:-10px;">{html}</div>
+</div>
+""",
+        height=height,
+        scrolling=False,
+    )
+
+def pareto_chart(df: pd.DataFrame, col: str, title: str):
+    if col not in df.columns or len(df) == 0:
+        return None
+
+    g = (
+        df.groupby(col, dropna=False)
+        .size()
+        .reset_index(name="Qtd")
+        .sort_values("Qtd", ascending=False)
+    )
+    g[col] = g[col].fillna("—").astype(str)
+
+    total = g["Qtd"].sum()
+    g["Acumulado_%"] = (g["Qtd"].cumsum() / total) * 100 if total else 0
+
+    fig = go.Figure()
+    fig.add_trace(go.Bar(
+        x=g[col],
+        y=g["Qtd"],
+        name="Qtd",
+        marker=dict(
+            color=AI_BLUE,
+            line=dict(color="#7FE7FF", width=1),
+        ),
+        opacity=0.95,
+    ))
+    fig.add_trace(go.Scatter(
+        x=g[col],
+        y=g["Acumulado_%"],
+        name="Acumulado %",
+        mode="lines+markers",
+        yaxis="y2",
+        line=dict(color="#FFD60A", width=3),
+        marker=dict(size=8, color="#FFD60A"),
+    ))
+
+    fig.update_layout(
+        title=title,
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="#0A0F1F",
+        font=dict(color="white"),
+        margin=dict(l=10, r=10, t=45, b=10),
+        height=380,
+        xaxis=dict(title="", tickangle=0, showgrid=False),
+        yaxis=dict(title="Quantidade", showgrid=True, gridcolor="rgba(255,255,255,0.08)"),
+        yaxis2=dict(
+            title="Acumulado %",
+            overlaying="y",
+            side="right",
+            range=[0, 100],
+            showgrid=False,
+            ticksuffix="%",
+        ),
+        legend=dict(orientation="h", y=1.12, x=0),
+    )
+    return fig
+
+# ==========================================
+# LEITURA DO EXCEL
+# ==========================================
 @st.cache_data(show_spinner=False)
 def load_from_repo() -> dict:
-    with open(DATA_PATH, "rb") as f:
+    excel_path = resolve_data_path()
+    with open(excel_path, "rb") as f:
         file_bytes = f.read()
 
     raw = pd.read_excel(io.BytesIO(file_bytes), sheet_name="PA", header=None).dropna(how="all")
@@ -181,6 +571,7 @@ def load_from_repo() -> dict:
         if row_str.str.contains("Ação", case=False, na=False).any() and row_str.str.contains("Indicador", case=False, na=False).any():
             header_row = i
             break
+
     if header_row is None:
         raise RuntimeError("Não encontrei o cabeçalho da tabela de ações (Ação/Indicador).")
 
@@ -196,16 +587,17 @@ def load_from_repo() -> dict:
             rename[c] = "Ação"
         elif "indicador" in cl:
             rename[c] = "Indicador"
-        elif "setor" in cl or "deposit" in cl:
+        elif "setor" in cl:
             rename[c] = "Setor"
         elif "respons" in cl:
             rename[c] = "Responsável"
-        elif "prazo" in cl or "deadline" in cl:
+        elif "prazo" in cl:
             rename[c] = "Prazo"
         elif "status" in cl:
             rename[c] = "Status"
-        elif "observ" in cl or "remarks" in cl:
+        elif "observ" in cl:
             rename[c] = "Observações"
+
     table = table.rename(columns=rename)
 
     wanted = ["Causa", "Ação", "Indicador", "Setor", "Responsável", "Prazo", "Status", "Observações"]
@@ -222,11 +614,17 @@ def load_from_repo() -> dict:
 
     today = date.today()
     if "Status" in table.columns:
-        table["Atrasada_calc"] = (table["Prazo_dt"].notna()) & (table["Prazo_dt"] < today) & (~table["Status"].isin(CLOSED_STATUSES))
+        table["Atrasada_calc"] = (
+            table["Prazo_dt"].notna()
+            & (table["Prazo_dt"] < today)
+            & (~table["Status"].isin(CLOSED_STATUSES))
+        )
     else:
-        table["Atrasada_calc"] = (table["Prazo_dt"].notna()) & (table["Prazo_dt"] < today)
+        table["Atrasada_calc"] = table["Prazo_dt"].notna() & (table["Prazo_dt"] < today)
 
-    table["Dias_para_prazo"] = table["Prazo_dt"].apply(lambda d: (d - today).days if pd.notna(d) else None)
+    table["Dias_para_prazo"] = table["Prazo_dt"].apply(
+        lambda d: (d - today).days if pd.notna(d) else None
+    )
 
     meta = {}
     for _, r in raw.head(30).iterrows():
@@ -241,74 +639,25 @@ def load_from_repo() -> dict:
         if "Responsável" in left:
             meta["Responsável do PA"] = val
 
-    return {"meta": meta, "table": table}
+    return {
+        "meta": meta,
+        "table": table,
+        "excel_path": str(excel_path),
+    }
 
-def pill(dot_class: str, text: str) -> str:
-    return f'<span class="badge"><span class="dot {dot_class}"></span>{text}</span>'
-
-def kpis(df: pd.DataFrame):
-    total = len(df)
-    s = df["Status"] if "Status" in df.columns else pd.Series([], dtype=str)
-    execd = int((s == "Executado").sum())
-    running = int((s == "Em execução").sum())
-    open_ = int((s == "Aberta").sum())
-    overdue = int(df["Atrasada_calc"].sum()) if "Atrasada_calc" in df.columns else 0
-    completion = (execd / total * 100) if total else 0.0
-    return dict(total=total, execd=execd, running=running, open=open_,
-                overdue=overdue, completion=completion)
-
-def gauge_fig(value: float, title: str, threshold_bad: float, threshold_warn: float):
-    value = max(0.0, min(100.0, float(value)))
-    fig = go.Figure(go.Indicator(
-        mode="gauge+number",
-        value=value,
-        number={"suffix": "%", "font": {"size": 44}},
-        title={"text": title, "font": {"size": 18}},
-        gauge={
-            "axis": {"range": [0, 100], "tickwidth": 1, "tickcolor": "rgba(255,255,255,0.35)"},
-            "bar": {"color": "rgba(0,229,255,0.85)"},
-            "bgcolor": "rgba(0,0,0,0)",
-            "borderwidth": 1,
-            "bordercolor": "rgba(255,255,255,0.12)",
-            "steps": [
-                {"range": [0, threshold_bad], "color": "rgba(255,23,68,0.30)"},
-                {"range": [threshold_bad, threshold_warn], "color": "rgba(255,145,0,0.28)"},
-                {"range": [threshold_warn, 100], "color": "rgba(0,200,83,0.22)"},
-            ],
-            "threshold": {
-                "line": {"color": "rgba(255,214,10,0.95)", "width": 5},
-                "thickness": 0.78,
-                "value": value,
-            }
-        }
-    ))
-    fig.update_layout(
-        height=360,
-        margin=dict(l=20, r=20, t=50, b=10),
-        paper_bgcolor="rgba(0,0,0,0)",
-        plot_bgcolor="rgba(0,0,0,0)",
-        font=dict(color="#e5e7eb"),
-    )
-    return fig
-
-# Load
-try:
-    payload = load_from_repo()
-except FileNotFoundError:
-    st.error(f"Não achei o arquivo: {DATA_PATH}. Coloque o Excel em `data/pa.xlsx`.")
-    st.stop()
-except Exception as e:
-    st.error(f"Erro ao ler o Excel: {e}")
-    st.stop()
-
+# ==========================================
+# APP
+# ==========================================
+payload = load_from_repo()
 meta = payload["meta"]
 table = payload["table"].copy()
+excel_path_used = payload.get("excel_path", "—")
 
-# Sidebar filtros
 with st.sidebar:
     st.markdown("### ⚙️ Filtros")
-    st.markdown(pill("safety", "Fonte fixa: data/pa.xlsx"), unsafe_allow_html=True)
+    st.markdown(pill("neon", "Fonte fixa: data/pa.xlsx"), unsafe_allow_html=True)
     st.caption("Atualize o arquivo no GitHub e o painel lê sempre o último.")
+    st.caption(f"📌 Lendo: {excel_path_used}")
     st.divider()
 
 def safe_unique(col):
@@ -317,12 +666,12 @@ def safe_unique(col):
         return sorted(vals)
     return []
 
-with st.sidebar:
-    status_opts = safe_unique("Status")
-    setor_opts = safe_unique("Setor")
-    resp_opts = safe_unique("Responsável")
-    ind_opts = safe_unique("Indicador")
+status_opts = safe_unique("Status")
+setor_opts = safe_unique("Setor")
+resp_opts = safe_unique("Responsável")
+ind_opts = safe_unique("Indicador")
 
+with st.sidebar:
     f_status = st.multiselect("Status", status_opts, default=status_opts)
     f_setor = st.multiselect("Setor", setor_opts, default=setor_opts)
     f_resp = st.multiselect("Responsável", resp_opts, default=resp_opts)
@@ -352,15 +701,15 @@ if f_range and isinstance(f_range, (list, tuple)) and len(f_range) == 2:
     a, b = f_range
     f = f[(f["Prazo_dt"].isna()) | ((f["Prazo_dt"] >= a) & (f["Prazo_dt"] <= b))]
 
-k = kpis(f)
+m = compute_metrics(f)
 
-# Title highlighted
+# HEADER
 st.markdown(
     f"""
 <div class="titlebar">
-  <div class="big-title">PA • Gemba Board ANDON</div>
+  <div class="big-title">PA • GEMBA BOARD ANDON</div>
   <div class="subtitle">
-    Fonte fixa: <b>{DATA_PATH}</b> • Assunto: <b>{meta.get("Assunto","—")}</b> •
+    Fonte fixa: <b>data/pa.xlsx</b> • Assunto: <b>{meta.get("Assunto","—")}</b> •
     Abertura: <b>{meta.get("Data de abertura","—")}</b> •
     Atualização (planilha): <b>{meta.get("Data de atualização","—")}</b> •
     Responsável: <b>{meta.get("Responsável do PA","—")}</b>
@@ -377,15 +726,17 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-if k["overdue"] > 0:
-    st.error(f"🔴 ANDON: {k['overdue']} ação(ões) com PRAZO VENCIDO no filtro atual.")
+# ANDON
+if m["overdue"] > 0:
+    st.error(f"🔴 ANDON: {m['overdue']} ação(ões) com PRAZO VENCIDO no filtro atual.")
 else:
     st.success("🟢 ANDON: Nenhuma ação com prazo vencido no filtro atual.")
 
 st.divider()
 
-# KPIs
+# KPI
 cols = st.columns(6)
+
 def kpi_html(label, value, sub=""):
     return f"""
 <div class="kpi">
@@ -394,104 +745,154 @@ def kpi_html(label, value, sub=""):
   <div class="sub">{sub}</div>
 </div>
 """
-cols[0].markdown(kpi_html("Total", k["total"], "Escopo selecionado"), unsafe_allow_html=True)
-cols[1].markdown(kpi_html("Executadas", k["execd"], "Fechadas"), unsafe_allow_html=True)
-cols[2].markdown(kpi_html("Em execução", k["running"], "Ativas"), unsafe_allow_html=True)
-cols[3].markdown(kpi_html("Abertas", k["open"], "Backlog"), unsafe_allow_html=True)
-cols[4].markdown(kpi_html("Atrasadas (calc.)", k["overdue"], "Prazo vencido"), unsafe_allow_html=True)
-cols[5].markdown(kpi_html("Conclusão", f'{k["completion"]:.1f}%', "Executadas/Total"), unsafe_allow_html=True)
 
-st.progress(min(max(k["completion"]/100, 0.0), 1.0), text=f'Conclusão do PA: {k["completion"]:.1f}%')
+cols[0].markdown(kpi_html("Total", m["total"], "Escopo selecionado"), unsafe_allow_html=True)
+cols[1].markdown(kpi_html("Executadas", m["execd"], "Fechadas"), unsafe_allow_html=True)
+cols[2].markdown(kpi_html("Em execução", m["running"], "Ativas"), unsafe_allow_html=True)
+cols[3].markdown(kpi_html("Abertas", m["open"], "Backlog"), unsafe_allow_html=True)
+cols[4].markdown(kpi_html("Atrasadas (calc.)", m["overdue"], "Prazo vencido"), unsafe_allow_html=True)
+cols[5].markdown(kpi_html("Conclusão", f'{m["completion"]:.1f}%', "Executadas/Total"), unsafe_allow_html=True)
 
-st.divider()
-
-# Gauges
-left, right = st.columns([1.05, 0.95])
-with left:
-    st.subheader("Velocímetro • Saúde do PA (Indústria 4.0)")
-    total = max(k["total"], 1)
-    penalty = (k["overdue"] / total) * 100 * 0.60
-    health = max(0.0, min(100.0, k["completion"] - penalty))
-    st.plotly_chart(gauge_fig(health, "Saúde do PA", threshold_bad=50, threshold_warn=75), use_container_width=True)
-    st.caption(f"Saúde = Conclusão − penalidade por atrasos (penalidade: {penalty:.1f} pts).")
-
-with right:
-    st.subheader("Velocímetro • Conclusão (%)")
-    st.plotly_chart(gauge_fig(k["completion"], "Conclusão do PA", threshold_bad=40, threshold_warn=70), use_container_width=True)
+st.progress(
+    min(max(m["completion"] / 100, 0.0), 1.0),
+    text=f"Conclusão do PA: {m['completion']:.1f}%"
+)
 
 st.divider()
 
-# Prioridades + Pareto Indicador
+# GAUGES
+g1, g2 = st.columns(2)
+with g1:
+    render_hud(
+        led_gauge(m["health"], "Saúde do PA", bad_th=50, warn_th=75, segments=28),
+        "Velocímetro LED • Saúde do PA",
+        subtitle=f"Penalidade por atrasos: {m['penalty']:.1f} pts",
+    )
+with g2:
+    render_hud(
+        led_gauge(m["completion"], "Conclusão do PA", bad_th=40, warn_th=70, segments=28),
+        "Velocímetro LED • Conclusão do PA",
+        subtitle="Gestão à vista (ANDON)",
+    )
+
+st.divider()
+
+# GAUGE POR SETOR
+st.subheader("Velocímetro por Setor (dropdown)")
+setores_current = sorted(
+    [s for s in f.get("Setor", pd.Series([], dtype=str)).dropna().astype(str).unique().tolist() if str(s).strip()]
+)
+
+if not setores_current:
+    st.info("Não há coluna Setor no arquivo ou não existem setores no filtro atual.")
+else:
+    sel = st.selectbox("Selecione o Setor", options=setores_current, index=0)
+    f_set = f[f["Setor"].astype(str) == str(sel)].copy()
+    ms = compute_metrics(f_set)
+
+    s1, s2 = st.columns(2)
+    with s1:
+        render_hud(
+            led_gauge(ms["health"], f"Saúde • {sel}", bad_th=50, warn_th=75, segments=28),
+            f"Setor: {sel} • Saúde (LED)",
+            subtitle=f"Atrasos: {ms['overdue']} • Penalidade: {ms['penalty']:.1f} pts",
+        )
+    with s2:
+        render_hud(
+            led_gauge(ms["completion"], f"Conclusão • {sel}", bad_th=40, warn_th=70, segments=28),
+            f"Setor: {sel} • Conclusão (LED)",
+            subtitle="Monitoramento turno a turno",
+        )
+
+st.divider()
+
+# PRIORIDADES + PARETO
 c1, c2 = st.columns([1.1, 0.9])
+
 with c1:
     st.subheader("Prioridades (críticas)")
     crit = f[f["Atrasada_calc"] == True].copy() if "Atrasada_calc" in f.columns else f.iloc[0:0].copy()
-    crit = crit.sort_values(["Dias_para_prazo"], ascending=True) if "Dias_para_prazo" in crit.columns else crit
+    if "Dias_para_prazo" in crit.columns:
+        crit = crit.sort_values(["Dias_para_prazo"], ascending=True)
+
     if len(crit):
-        show_cols = [x for x in ["Ação","Setor","Responsável","Prazo","Status","Dias_para_prazo"] if x in crit.columns]
+        show_cols = [x for x in ["Ação", "Setor", "Responsável", "Prazo", "Status", "Dias_para_prazo"] if x in crit.columns]
         st.dataframe(crit[show_cols].head(14), use_container_width=True, height=380)
     else:
-        st.success("Sem ações críticas no filtro atual ✅")
+        st.success("Sem ações críticas no filtro atual.")
+
 with c2:
-    st.subheader("Pareto por Indicador (Qtd)")
-    if "Indicador" in f.columns and len(f):
-        g = f.groupby("Indicador", dropna=False).size().reset_index(name="Qtd").sort_values("Qtd", ascending=False)
-        fig = px.bar(g, x="Indicador", y="Qtd")
-        fig.update_layout(margin=dict(l=10,r=10,t=30,b=10), height=380, paper_bgcolor="rgba(0,0,0,0)")
-        st.plotly_chart(fig, use_container_width=True)
+    fig_pareto = pareto_chart(f, "Indicador", "Pareto por Indicador (Qtd)")
+    if fig_pareto is not None:
+        st.plotly_chart(fig_pareto, use_container_width=True)
     else:
-        st.info("Sem coluna Indicador ou sem dados.")
+        st.info("Sem dados suficientes para o Pareto.")
 
 st.divider()
 
-# Kanban
+# KANBAN
 st.subheader("Quadro Kanban (Gestão à vista)")
 st.caption("Abertas → Em execução → Executadas. Atrasadas = foco do turno.")
 
 board_cols = st.columns(4)
 board = [
-    ("Abertas", "info", board_cols[0], "Aberta"),
-    ("Em execução", "warn", board_cols[1], "Em execução"),
-    ("Atrasadas", "bad", board_cols[2], "Atrasada"),
-    ("Executadas", "good", board_cols[3], "Executado"),
+    ("Abertas", "info", board_cols[0], "Aberta", "open"),
+    ("Em execução", "warn", board_cols[1], "Em execução", "run"),
+    ("Atrasadas", "bad", board_cols[2], "Atrasada", "late"),
+    ("Executadas", "good", board_cols[3], "Executado", "done"),
 ]
 
-def render_col(df, container, title, dot, status_value):
+def render_col(df, container, title, dot, status_value, css_class):
     with container:
         st.markdown(pill(dot, title), unsafe_allow_html=True)
+
         subset = df[df["Status"] == status_value].copy() if "Status" in df.columns else df.iloc[0:0].copy()
-        subset = subset.sort_values(["Prazo_dt"], ascending=True) if "Prazo_dt" in subset.columns else subset
+        if "Prazo_dt" in subset.columns:
+            subset = subset.sort_values(["Prazo_dt"], ascending=True)
+
         if len(subset) == 0:
-            st.markdown('<div class="card"><div class="card-small">Sem itens</div></div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="card {css_class}"><div class="card-small">Sem itens</div></div>', unsafe_allow_html=True)
             return
-        for _, r in subset.head(10).iterrows():
-            acao = str(r.get("Ação","")).strip()
-            setor = str(r.get("Setor","")).strip()
-            resp = str(r.get("Responsável","")).strip()
-            prazo = str(r.get("Prazo","")).strip()
+
+        for _, r in subset.head(12).iterrows():
+            acao = str(r.get("Ação", "")).strip()
+            setor = str(r.get("Setor", "")).strip()
+            resp = str(r.get("Responsável", "")).strip()
+            prazo = str(r.get("Prazo", "")).strip()
             dias = r.get("Dias_para_prazo", None)
-            line2 = " • ".join([x for x in [setor, resp, (f"{dias}d" if dias is not None else "")] if x and x != "nan"])
+
+            dias_txt = ""
+            if isinstance(dias, (int, float)) and pd.notna(dias):
+                dias_txt = f"{int(dias):+}d"
+
+            line2 = " • ".join([x for x in [setor, resp, dias_txt] if x and x != "nan"])
+
             st.markdown(
                 f"""
-<div class="card" style="margin-top:8px;">
+<div class="card {css_class}" style="margin-top:10px;">
   <div class="card-title">{acao if acao else "—"}</div>
-  <div class="card-small">{line2}</div>
+  <div class="card-small">{line2 if line2 else "—"}</div>
   <div class="card-small">Prazo: <b>{prazo if prazo else "—"}</b></div>
 </div>
 """,
                 unsafe_allow_html=True,
             )
 
-for title, dot, cont, status_value in board:
-    render_col(f, cont, title, dot, status_value)
+for title, dot, cont, status_value, css_class in board:
+    render_col(f, cont, title, dot, status_value, css_class)
 
 st.divider()
 
-# Table + export
+# TABELA COMPLETA
 st.subheader("Lista completa (filtro aplicado)")
-show_cols = [x for x in ["Causa","Ação","Indicador","Setor","Responsável","Prazo","Status","Dias_para_prazo"] if x in f.columns]
-st.dataframe(f[show_cols], use_container_width=True, height=520)
+show_cols = [x for x in ["Causa", "Ação", "Indicador", "Setor", "Responsável", "Prazo", "Status", "Dias_para_prazo"] if x in f.columns]
+st.dataframe(f[show_cols], use_container_width=True, height=560)
 
 st.subheader("Exportar")
 csv = f.to_csv(index=False).encode("utf-8-sig")
-st.download_button("⬇️ Baixar CSV (filtro aplicado)", data=csv, file_name="pa_filtrado.csv", mime="text/csv")
+st.download_button(
+    "⬇️ Baixar CSV (filtro aplicado)",
+    data=csv,
+    file_name="pa_filtrado.csv",
+    mime="text/csv",
+)
