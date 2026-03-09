@@ -111,6 +111,38 @@ div[data-testid="stDataFrame"] .ag-row:hover{
 
 </style>
 """, unsafe_allow_html=True)
+/* MULTISELECT / FILTROS */
+div[data-baseweb="select"]{
+  background: linear-gradient(180deg,#2a2f3a,#1b1f28) !important;
+  border-radius:8px;
+}
+
+/* CAIXA DO SELECT */
+div[data-baseweb="select"] > div{
+  background: linear-gradient(180deg,#2a2f3a,#1b1f28) !important;
+}
+
+/* TAGS DOS FILTROS */
+span[data-baseweb="tag"]{
+  background:#3a404c !important;
+  color:white !important;
+}
+
+/* TABELAS */
+div[data-testid="stDataFrame"]{
+  background: linear-gradient(180deg,#2c313c,#1e222b) !important;
+  border-radius:12px !important;
+}
+
+/* LINHAS DA TABELA */
+.ag-row{
+  background: linear-gradient(180deg,#2c313c,#1e222b) !important;
+}
+
+/* HOVER */
+.ag-row:hover{
+  background:#323844 !important;
+}
 
 STATUS_MAP = {
     "executado": "Executado",
