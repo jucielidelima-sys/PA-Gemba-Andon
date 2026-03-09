@@ -1,97 +1,94 @@
-
-import io
-from datetime import date
-from pathlib import Path
-import base64
-
-import pandas as pd
-import plotly.graph_objects as go
-import streamlit as st
-import streamlit.components.v1 as components
-
-REL_DATA_PATH = Path("data") / "pa.xlsx"
-ASSETS_DIR = Path(__file__).parent / "assets"
-PARETO_BG = ASSETS_DIR / "pareto_bg.png"
-ROBOTIC_BG = ASSETS_DIR / "robotic_bg.png"
-
-st.set_page_config(page_title="PA • Gemba Board ANDON", layout="wide")
-
-def img_to_data_uri(path: Path) -> str:
-    if not path.exists():
-        return ""
-    return "data:image/png;base64," + base64.b64encode(path.read_bytes()).decode("utf-8")
-
-pareto_bg_uri = img_to_data_uri(PARETO_BG)
-robotic_bg_uri = img_to_data_uri(ROBOTIC_BG)
-
 st.markdown(f"""
 <style>
-/* FUNDO GERAL COM IMAGEM EM TODA A TELA */
 html, body, .stApp,
 [data-testid="stAppViewContainer"],
 [data-testid="stHeader"],
 [data-testid="stToolbar"]{{
-  background:
-    linear-gradient(180deg, rgba(4,11,23,0.86), rgba(4,11,23,0.94)),
-    url("{robotic_bg_uri}") !important;
-  background-size: cover !important;
-  background-position: center center !important;
-  background-attachment: fixed !important;
-  background-blend-mode: multiply !important;
+  background: linear-gradient(180deg, #0B2A52 0%, #0A2040 45%, #081A33 100%) !important;
   color: rgba(255,255,255,0.96) !important;
 }}
 [data-testid="stHeader"]{{background:transparent !important;}}
 *{{color:rgba(255,255,255,0.96);}}
 
+/* fundo limpo em azul gradiente, sem imagem espalhada */
+[data-testid="stAppViewContainer"]{{
+  position: relative !important;
+  overflow-x: hidden !important;
+}}
+[data-testid="stAppViewContainer"]::before{{
+  content:"";
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(900px 420px at 20% 0%, rgba(80,180,255,0.18), rgba(0,0,0,0) 60%),
+    linear-gradient(180deg, #0B2A52 0%, #0A2040 45%, #081A33 100%);
+  z-index: 0;
+  pointer-events: none;
+}}
+
+/* braços robóticos laterais fortes, sem poluir o centro */
+[data-testid="stAppViewContainer"]::after{{
+  content:"";
+  position: fixed;
+  inset: 0;
+  background:
+    url("{robotic_bg_uri}") left center / 28% auto no-repeat,
+    url("{robotic_bg_uri}") right center / 28% auto no-repeat;
+  filter: saturate(1.55) hue-rotate(-22deg) contrast(1.18) brightness(1.02);
+  opacity: 0.50;
+  mix-blend-mode: screen;
+  z-index: 0;
+  pointer-events: none;
+}}
+
+[data-testid="stAppViewContainer"] > .main,
+.block-container{{
+  position: relative;
+  z-index: 1;
+}}
+
 [data-testid="stSidebar"],
 [data-testid="stSidebarContent"]{{
-  background:
-    linear-gradient(180deg, rgba(8,18,37,0.90), rgba(7,13,28,0.94)),
-    url("{robotic_bg_uri}");
-  background-size: cover;
-  background-position: center;
-  background-blend-mode: multiply;
+  background: linear-gradient(180deg, rgba(10,28,56,0.96), rgba(8,20,40,0.98));
   border-right:1px solid rgba(120,220,255,0.18);
 }}
 
 :root{{
-  --bg:#081225;
-  --panel:#102447;
-  --panel2:#132D58;
-  --line:rgba(120,220,255,0.14);
-  --muted:rgba(220,245,255,0.72);
-  --muted2:rgba(220,245,255,0.58);
-  --neon:#6FE8FF;
-  --ai:#32C8FF;
-  --good:#3BEA8B;
-  --warn:#FFB547;
-  --bad:#FF4567;
-  --info:#59B7FF;
-  --safety:#FFD95C;
+  --bg:#0B2A52;
+  --panel:#12315D;
+  --panel2:#163A6D;
+  --line:rgba(140,220,255,0.16);
+  --muted:rgba(230,245,255,0.76);
+  --muted2:rgba(230,245,255,0.62);
+  --neon:#75E9FF;
+  --ai:#44C8FF;
+  --good:#46E79B;
+  --warn:#FFC25C;
+  --bad:#FF5C78;
+  --info:#74BFFF;
+  --safety:#FFE06A;
 }}
 
 .block-container{{padding-top:1rem; padding-bottom:2rem; max-width:1800px;}}
 
-/* filtros */
 div[data-baseweb="select"]{{
-  background: linear-gradient(180deg,#31445F,#1A2740) !important;
+  background: linear-gradient(180deg,#365988,#223A61) !important;
   border-radius:10px !important;
 }}
 div[data-baseweb="select"] > div{{
-  background: linear-gradient(180deg,#31445F,#1A2740) !important;
-  border:1px solid rgba(120,220,255,0.14) !important;
+  background: linear-gradient(180deg,#365988,#223A61) !important;
+  border:1px solid rgba(140,220,255,0.14) !important;
 }}
 span[data-baseweb="tag"]{{
-  background:#2EC5FF !important;
-  color:#04101d !important;
+  background:#49CFFF !important;
+  color:#071424 !important;
   border:none !important;
   font-weight:700 !important;
 }}
 
-/* tabela */
 div[data-testid="stDataFrame"]{{
-  background: linear-gradient(180deg, rgba(49,68,95,0.96), rgba(26,39,64,0.96)) !important;
-  border:1px solid rgba(120,220,255,0.16) !important;
+  background: linear-gradient(180deg, rgba(45,75,115,0.96), rgba(28,48,79,0.96)) !important;
+  border:1px solid rgba(140,220,255,0.18) !important;
   border-radius:14px !important;
   padding:6px !important;
 }}
@@ -101,26 +98,22 @@ div[data-testid="stDataFrame"] .ag-body-viewport,
 div[data-testid="stDataFrame"] .ag-header,
 div[data-testid="stDataFrame"] .ag-center-cols-container,
 div[data-testid="stDataFrame"] .ag-row{{
-  background: linear-gradient(180deg, rgba(49,68,95,0.96), rgba(26,39,64,0.96)) !important;
+  background: linear-gradient(180deg, rgba(45,75,115,0.96), rgba(28,48,79,0.96)) !important;
 }}
 div[data-testid="stDataFrame"] .ag-header-cell,
 div[data-testid="stDataFrame"] .ag-cell{{
-  color: rgba(255,255,255,0.94) !important;
-  border-color: rgba(120,220,255,0.10) !important;
+  color: rgba(255,255,255,0.96) !important;
+  border-color: rgba(140,220,255,0.10) !important;
 }}
-div[data-testid="stDataFrame"] .ag-row:hover{{ background:#223451 !important; }}
+div[data-testid="stDataFrame"] .ag-row:hover{{ background:#27456e !important; }}
 
 .titlebar{{
   border:1px solid var(--line);
   border-radius:18px;
   padding:16px 18px;
   background:
-    radial-gradient(900px 260px at 0% 0%, rgba(50,200,255,0.22), rgba(0,0,0,0)),
-    linear-gradient(180deg, rgba(16,36,71,0.62), rgba(8,18,37,0.55)),
-    url("{robotic_bg_uri}");
-  background-size:auto, auto, cover;
-  background-position:center;
-  background-blend-mode:screen, normal, normal;
+    radial-gradient(900px 260px at 0% 0%, rgba(68,200,255,0.18), rgba(0,0,0,0)),
+    linear-gradient(180deg, rgba(18,49,93,0.88), rgba(10,32,64,0.82));
   position:relative;
   overflow:hidden;
 }}
@@ -131,10 +124,10 @@ div[data-testid="stDataFrame"] .ag-row:hover{{ background:#223451 !important; }}
   top:0;
   width:200%;
   height:2px;
-  background: linear-gradient(90deg, rgba(50,200,255,0), rgba(111,232,255,1), rgba(50,200,255,0));
+  background: linear-gradient(90deg, rgba(68,200,255,0), rgba(117,233,255,1), rgba(68,200,255,0));
   opacity:0.9;
 }}
-.big-title{{font-size:34px; font-weight:1000; letter-spacing:1px; text-transform:uppercase; text-shadow:0 0 22px rgba(111,232,255,0.35);}}
+.big-title{{font-size:34px; font-weight:1000; letter-spacing:1px; text-transform:uppercase; text-shadow:0 0 22px rgba(117,233,255,0.35);}}
 .subtitle{{color:var(--muted); font-size:12px; margin-top:4px;}}
 
 .badge{{
@@ -148,16 +141,16 @@ div[data-testid="stDataFrame"] .ag-row:hover{{ background:#223451 !important; }}
 .dot.warn{{background:var(--warn);}}
 .dot.bad{{background:var(--bad);}}
 .dot.info{{background:var(--info);}}
-.dot.neon{{background:var(--neon); box-shadow:0 0 12px rgba(111,232,255,0.85);}}
+.dot.neon{{background:var(--neon); box-shadow:0 0 12px rgba(117,233,255,0.85);}}
 
 .kpi{{
   border:1px solid var(--line);
   border-radius:16px;
   padding:14px 16px;
   background:
-    radial-gradient(500px 180px at 0% 0%, rgba(50,200,255,0.12), rgba(0,0,0,0)),
+    radial-gradient(500px 180px at 0% 0%, rgba(68,200,255,0.12), rgba(0,0,0,0)),
     linear-gradient(180deg, rgba(255,255,255,0.04), rgba(0,0,0,0)),
-    rgba(16,36,71,0.72);
+    rgba(18,49,93,0.70);
 }}
 .kpi .label{{color:var(--muted2); font-size:12px;}}
 .kpi .value{{font-size:30px; font-weight:1000; margin-top:4px;}}
@@ -165,23 +158,23 @@ div[data-testid="stDataFrame"] .ag-row:hover{{ background:#223451 !important; }}
 
 .hud{{
   border-radius:22px;
-  border:1px solid rgba(120,220,255,0.16);
+  border:1px solid rgba(140,220,255,0.18);
   background:
-    radial-gradient(520px 220px at 0% 0%, rgba(50,200,255,0.20), rgba(0,0,0,0)),
-    radial-gradient(520px 220px at 100% 100%, rgba(255,217,92,0.12), rgba(0,0,0,0)),
-    rgba(16,36,71,0.62);
+    radial-gradient(520px 220px at 0% 0%, rgba(68,200,255,0.18), rgba(0,0,0,0)),
+    radial-gradient(520px 220px at 100% 100%, rgba(255,224,106,0.10), rgba(0,0,0,0)),
+    rgba(18,49,93,0.66);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   position: relative;
   padding: 12px 12px 8px 12px;
   overflow: hidden;
-  box-shadow: 0 0 0 1px rgba(50,200,255,0.10) inset, 0 16px 34px rgba(0,0,0,0.60);
+  box-shadow: 0 0 0 1px rgba(68,200,255,0.10) inset, 0 16px 34px rgba(0,0,0,0.50);
 }}
 .hud:before{{
   content:"";
   position:absolute;
   inset:0;
-  background: radial-gradient(circle at 50% 45%, rgba(50,200,255,0.10), rgba(0,0,0,0) 58%);
+  background: radial-gradient(circle at 50% 45%, rgba(68,200,255,0.10), rgba(0,0,0,0) 58%);
   animation: pulseGlow 2.4s infinite ease-in-out;
   pointer-events:none;
 }}
@@ -192,12 +185,12 @@ div[data-testid="stDataFrame"] .ag-row:hover{{ background:#223451 !important; }}
 }}
 
 .card{{
-  border:1px solid rgba(120,220,255,0.14);
+  border:1px solid rgba(140,220,255,0.14);
   border-left:5px solid rgba(255,255,255,0.25);
   border-radius:16px;
   padding:12px 12px;
-  background: rgba(16,36,71,0.76);
-  box-shadow:0 10px 22px rgba(0,0,0,0.55);
+  background: rgba(18,49,93,0.76);
+  box-shadow:0 10px 22px rgba(0,0,0,0.40);
 }}
 .card.open{{ border-left-color: var(--info); }}
 .card.run{{ border-left-color: var(--warn); }}
@@ -207,32 +200,25 @@ div[data-testid="stDataFrame"] .ag-row:hover{{ background:#223451 !important; }}
 .card-small{{color:var(--muted2); font-size:12px;}}
 
 .robot-section{{
-  border:1px solid rgba(120,220,255,0.16);
+  border:1px solid rgba(140,220,255,0.16);
   border-radius:18px;
-  background:
-    linear-gradient(180deg, rgba(16,36,71,0.42), rgba(8,18,37,0.46)),
-    url("{robotic_bg_uri}");
-  background-size: cover;
-  background-position:center;
-  background-blend-mode: screen, normal;
+  background: linear-gradient(180deg, rgba(18,49,93,0.76), rgba(10,32,64,0.72));
   padding: 12px;
 }}
 
 .pareto-panel{{
-  border:1px solid rgba(120,220,255,0.16);
+  border:1px solid rgba(140,220,255,0.16);
   border-radius:18px;
   background:
-    linear-gradient(180deg, rgba(16,36,71,0.20), rgba(8,18,37,0.28)),
+    linear-gradient(180deg, rgba(18,49,93,0.22), rgba(10,32,64,0.30)),
     url("{pareto_bg_uri}");
   background-size: cover;
-  background-position:center;
-  background-blend-mode: screen, normal;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-blend-mode: screen;
   padding: 8px 10px 2px 10px;
 }}
-</style>
-""", unsafe_allow_html=True)
-
-STATUS_MAP = {
+""", unsafe_allow_html=True)STATUS_MAP = {
     "executado": "Executado",
     "em execução": "Em execução",
     "em execucao": "Em execução",
@@ -364,8 +350,21 @@ def pareto_chart(df: pd.DataFrame, col: str, title: str):
         line=dict(color="#FFD95C", width=3),
         marker=dict(size=8, color="#FFD95C")
     ))
+    if pareto_bg_uri:
+        fig.add_layout_image(
+            dict(
+                source=pareto_bg_uri,
+                xref="paper", yref="paper",
+                x=1.0, y=1.0,
+                sizex=1.0, sizey=1.0,
+                xanchor="right", yanchor="top",
+                sizing="stretch",
+                opacity=0.28,
+                layer="below"
+            )
+        )
     fig.update_layout(
-        title=title, paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(10,15,31,0.15)",
+        title=title, paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(11,42,82,0.18)",
         font=dict(color="white"), margin=dict(l=10, r=10, t=45, b=10), height=380,
         xaxis=dict(title="", tickangle=0, showgrid=False),
         yaxis=dict(title="Quantidade", showgrid=True, gridcolor="rgba(255,255,255,0.08)"),
