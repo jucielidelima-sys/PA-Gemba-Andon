@@ -110,7 +110,20 @@ span[data-baseweb="tag"] svg{
   fill:#000000 !important;
   color:#000000 !important;
 }
-}}
+ul[role="listbox"]{
+  background:#FFFFFF !important;
+  border:1px solid #FFFFFF !important;
+}
+
+ul[role="listbox"] li{
+  background:#FFFFFF !important;
+  color:#000000 !important;
+}
+
+ul[role="listbox"] li:hover{
+  background:#EDEDED !important;
+  color:#000000 !important;
+}
 
 div[data-testid="stDataFrame"]{{
   background: rgba(82, 88, 98, 0.88) !important;
