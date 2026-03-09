@@ -90,7 +90,6 @@ ul[role="listbox"] li:hover{
   background:#EDEDED !important;
   color:#000000 !important;
 }
-}}
 
 div[data-testid="stDataFrame"]{{
   background: rgba(82, 88, 98, 0.88) !important;
