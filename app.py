@@ -116,7 +116,7 @@ div[data-testid="stDataFrame"] .ag-row:hover{{ background:#223451 !important; }}
   padding:16px 18px;
   background:
     radial-gradient(900px 260px at 0% 0%, rgba(50,200,255,0.22), rgba(0,0,0,0)),
-    linear-gradient(180deg, rgba(16,36,71,0.85), rgba(8,18,37,0.78)),
+    linear-gradient(180deg, rgba(16,36,71,0.62), rgba(8,18,37,0.55)),
     url("{robotic_bg_uri}");
   background-size:auto, auto, cover;
   background-position:center;
@@ -210,7 +210,7 @@ div[data-testid="stDataFrame"] .ag-row:hover{{ background:#223451 !important; }}
   border:1px solid rgba(120,220,255,0.16);
   border-radius:18px;
   background:
-    linear-gradient(180deg, rgba(16,36,71,0.72), rgba(8,18,37,0.82)),
+    linear-gradient(180deg, rgba(16,36,71,0.42), rgba(8,18,37,0.46)),
     url("{robotic_bg_uri}");
   background-size: cover;
   background-position:center;
@@ -222,7 +222,7 @@ div[data-testid="stDataFrame"] .ag-row:hover{{ background:#223451 !important; }}
   border:1px solid rgba(120,220,255,0.16);
   border-radius:18px;
   background:
-    linear-gradient(180deg, rgba(16,36,71,0.45), rgba(8,18,37,0.55)),
+    linear-gradient(180deg, rgba(16,36,71,0.20), rgba(8,18,37,0.28)),
     url("{pareto_bg_uri}");
   background-size: cover;
   background-position:center;
@@ -494,6 +494,37 @@ st.markdown(f"""
   </div>
 </div>
 """, unsafe_allow_html=True)
+
+st.markdown(f"""
+<div style="
+  position: relative;
+  margin-top: 10px;
+  margin-bottom: 4px;
+  height: 180px;
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid rgba(120,220,255,0.18);
+  background:
+    linear-gradient(90deg, rgba(8,18,37,0.22), rgba(8,18,37,0.48)),
+    url('{robotic_bg_uri}');
+  background-size: cover;
+  background-position: center;
+  background-blend-mode: screen;
+">
+  <div style="
+    position:absolute; inset:0;
+    background: linear-gradient(180deg, rgba(50,200,255,0.08), rgba(0,0,0,0.18));
+  "></div>
+  <div style="
+    position:absolute; left:24px; bottom:22px;
+    font-size:28px; font-weight:1000; letter-spacing:0.5px;
+    text-shadow:0 0 18px rgba(111,232,255,0.35);
+  ">
+    INDÚSTRIA 4.0 • MONITORAMENTO INTELIGENTE
+  </div>
+</div>
+""", unsafe_allow_html=True)
+
 
 if m["overdue"] > 0:
     st.error(f"🔴 ANDON: {m['overdue']} ação(ões) com PRAZO VENCIDO no filtro atual.")
