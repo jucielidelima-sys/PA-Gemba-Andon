@@ -76,19 +76,40 @@ html, body, .stApp,
   max-width: 1850px;
 }}
 
-div[data-baseweb="select"]{{
-  background: linear-gradient(180deg,#868d98,#646b76) !important;
+div[data-baseweb="select"]{
+  background: #FFFFFF !important;
   border-radius:10px !important;
-}}
-div[data-baseweb="select"] > div{{
-  background: linear-gradient(180deg,#868d98,#646b76) !important;
-  border:1px solid rgba(255,255,255,0.10) !important;
-}}
-span[data-baseweb="tag"]{{
-  background:#49CFFF !important;
-  color:#06121d !important;
-  border:none !important;
+}
+
+div[data-baseweb="select"] > div{
+  background: #FFFFFF !important;
+  border:1px solid #FFFFFF !important;
+  color:#000000 !important;
+}
+
+div[data-baseweb="select"] *{
+  color:#000000 !important;
+}
+
+div[data-baseweb="popover"] *{
+  color:#000000 !important;
+}
+
+span[data-baseweb="tag"]{
+  background:#FFFFFF !important;
+  color:#000000 !important;
+  border:1px solid #FFFFFF !important;
   font-weight:700 !important;
+}
+
+span[data-baseweb="tag"] span{
+  color:#000000 !important;
+}
+
+span[data-baseweb="tag"] svg{
+  fill:#000000 !important;
+  color:#000000 !important;
+}
 }}
 
 div[data-testid="stDataFrame"]{{
