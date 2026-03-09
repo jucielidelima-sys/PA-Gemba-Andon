@@ -89,6 +89,7 @@ ul[role="listbox"] li{
 ul[role="listbox"] li:hover{
   background:#EDEDED !important;
   color:#000000 !important;
+}
 }}
 
 div[data-testid="stDataFrame"]{{
