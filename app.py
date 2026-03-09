@@ -26,31 +26,36 @@ robotic_bg_uri = img_to_data_uri(ROBOTIC_BG)
 
 st.markdown(f"""
 <style>
+/* FUNDO GERAL COM IMAGEM EM TODA A TELA */
 html, body, .stApp,
 [data-testid="stAppViewContainer"],
 [data-testid="stHeader"],
 [data-testid="stToolbar"]{{
-  background:#081225 !important;
-  color:rgba(255,255,255,0.96) !important;
+  background:
+    linear-gradient(180deg, rgba(4,11,23,0.86), rgba(4,11,23,0.94)),
+    url("{robotic_bg_uri}") !important;
+  background-size: cover !important;
+  background-position: center center !important;
+  background-attachment: fixed !important;
+  background-blend-mode: multiply !important;
+  color: rgba(255,255,255,0.96) !important;
 }}
 [data-testid="stHeader"]{{background:transparent !important;}}
 *{{color:rgba(255,255,255,0.96);}}
 
-/* Sidebar */
 [data-testid="stSidebar"],
 [data-testid="stSidebarContent"]{{
   background:
-    linear-gradient(180deg, rgba(8,18,37,0.96), rgba(7,13,28,0.98)),
+    linear-gradient(180deg, rgba(8,18,37,0.90), rgba(7,13,28,0.94)),
     url("{robotic_bg_uri}");
   background-size: cover;
   background-position: center;
-  background-blend-mode: screen, normal;
+  background-blend-mode: multiply;
   border-right:1px solid rgba(120,220,255,0.18);
 }}
 
 :root{{
   --bg:#081225;
-  --bg2:#0C1933;
   --panel:#102447;
   --panel2:#132D58;
   --line:rgba(120,220,255,0.14);
@@ -67,6 +72,7 @@ html, body, .stApp,
 
 .block-container{{padding-top:1rem; padding-bottom:2rem; max-width:1800px;}}
 
+/* filtros */
 div[data-baseweb="select"]{{
   background: linear-gradient(180deg,#31445F,#1A2740) !important;
   border-radius:10px !important;
@@ -82,8 +88,9 @@ span[data-baseweb="tag"]{{
   font-weight:700 !important;
 }}
 
+/* tabela */
 div[data-testid="stDataFrame"]{{
-  background: linear-gradient(180deg,#31445F,#1A2740) !important;
+  background: linear-gradient(180deg, rgba(49,68,95,0.96), rgba(26,39,64,0.96)) !important;
   border:1px solid rgba(120,220,255,0.16) !important;
   border-radius:14px !important;
   padding:6px !important;
@@ -94,7 +101,7 @@ div[data-testid="stDataFrame"] .ag-body-viewport,
 div[data-testid="stDataFrame"] .ag-header,
 div[data-testid="stDataFrame"] .ag-center-cols-container,
 div[data-testid="stDataFrame"] .ag-row{{
-  background: linear-gradient(180deg,#31445F,#1A2740) !important;
+  background: linear-gradient(180deg, rgba(49,68,95,0.96), rgba(26,39,64,0.96)) !important;
 }}
 div[data-testid="stDataFrame"] .ag-header-cell,
 div[data-testid="stDataFrame"] .ag-cell{{
@@ -109,11 +116,11 @@ div[data-testid="stDataFrame"] .ag-row:hover{{ background:#223451 !important; }}
   padding:16px 18px;
   background:
     radial-gradient(900px 260px at 0% 0%, rgba(50,200,255,0.22), rgba(0,0,0,0)),
-    linear-gradient(180deg, rgba(16,36,71,0.95), rgba(8,18,37,0.92)),
+    linear-gradient(180deg, rgba(16,36,71,0.85), rgba(8,18,37,0.78)),
     url("{robotic_bg_uri}");
   background-size:auto, auto, cover;
   background-position:center;
-  background-blend-mode:screen, normal, soft-light;
+  background-blend-mode:screen, normal, normal;
   position:relative;
   overflow:hidden;
 }}
@@ -127,7 +134,7 @@ div[data-testid="stDataFrame"] .ag-row:hover{{ background:#223451 !important; }}
   background: linear-gradient(90deg, rgba(50,200,255,0), rgba(111,232,255,1), rgba(50,200,255,0));
   opacity:0.9;
 }}
-.big-title{{ font-size:34px; font-weight:1000; letter-spacing:1px; text-transform:uppercase; text-shadow:0 0 22px rgba(111,232,255,0.35); }}
+.big-title{{font-size:34px; font-weight:1000; letter-spacing:1px; text-transform:uppercase; text-shadow:0 0 22px rgba(111,232,255,0.35);}}
 .subtitle{{color:var(--muted); font-size:12px; margin-top:4px;}}
 
 .badge{{
@@ -150,7 +157,7 @@ div[data-testid="stDataFrame"] .ag-row:hover{{ background:#223451 !important; }}
   background:
     radial-gradient(500px 180px at 0% 0%, rgba(50,200,255,0.12), rgba(0,0,0,0)),
     linear-gradient(180deg, rgba(255,255,255,0.04), rgba(0,0,0,0)),
-    rgba(16,36,71,0.62);
+    rgba(16,36,71,0.72);
 }}
 .kpi .label{{color:var(--muted2); font-size:12px;}}
 .kpi .value{{font-size:30px; font-weight:1000; margin-top:4px;}}
@@ -162,7 +169,7 @@ div[data-testid="stDataFrame"] .ag-row:hover{{ background:#223451 !important; }}
   background:
     radial-gradient(520px 220px at 0% 0%, rgba(50,200,255,0.20), rgba(0,0,0,0)),
     radial-gradient(520px 220px at 100% 100%, rgba(255,217,92,0.12), rgba(0,0,0,0)),
-    rgba(16,36,71,0.52);
+    rgba(16,36,71,0.62);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   position: relative;
@@ -189,7 +196,7 @@ div[data-testid="stDataFrame"] .ag-row:hover{{ background:#223451 !important; }}
   border-left:5px solid rgba(255,255,255,0.25);
   border-radius:16px;
   padding:12px 12px;
-  background: rgba(16,36,71,0.66);
+  background: rgba(16,36,71,0.76);
   box-shadow:0 10px 22px rgba(0,0,0,0.55);
 }}
 .card.open{{ border-left-color: var(--info); }}
@@ -203,7 +210,7 @@ div[data-testid="stDataFrame"] .ag-row:hover{{ background:#223451 !important; }}
   border:1px solid rgba(120,220,255,0.16);
   border-radius:18px;
   background:
-    linear-gradient(180deg, rgba(16,36,71,0.78), rgba(8,18,37,0.90)),
+    linear-gradient(180deg, rgba(16,36,71,0.72), rgba(8,18,37,0.82)),
     url("{robotic_bg_uri}");
   background-size: cover;
   background-position:center;
@@ -215,7 +222,7 @@ div[data-testid="stDataFrame"] .ag-row:hover{{ background:#223451 !important; }}
   border:1px solid rgba(120,220,255,0.16);
   border-radius:18px;
   background:
-    linear-gradient(180deg, rgba(16,36,71,0.78), rgba(8,18,37,0.90)),
+    linear-gradient(180deg, rgba(16,36,71,0.45), rgba(8,18,37,0.55)),
     url("{pareto_bg_uri}");
   background-size: cover;
   background-position:center;
@@ -267,17 +274,12 @@ def resolve_data_path() -> Path:
     app_dir = Path(__file__).parent
     expected = (app_dir / REL_DATA_PATH).resolve()
     data_dir = app_dir / "data"
-    if data_dir.exists() and data_dir.is_file():
-        raise RuntimeError("Erro: existe um ARQUIVO chamado 'data'. Apague esse arquivo e crie a pasta 'data/' com 'pa.xlsx'.")
     if expected.exists() and expected.is_file():
         return expected
     if data_dir.exists() and data_dir.is_dir():
         cands = sorted([x for x in data_dir.glob("*.xlsx") if x.is_file()])
         if cands:
             return cands[0]
-    cands = sorted([x for x in app_dir.glob("*.xlsx") if x.is_file()])
-    if cands:
-        return cands[0]
     raise FileNotFoundError("Não encontrei o Excel. Esperado: data/pa.xlsx")
 
 def compute_metrics(df: pd.DataFrame) -> dict:
@@ -312,7 +314,6 @@ def led_gauge(value: float, label: str, bad_th: float, warn_th: float, segments:
     r_outer = 1.0
     thickness = 0.22
     r_inner = r_outer - thickness
-
     fig = go.Figure()
     fig.add_trace(go.Barpolar(r=[thickness]*segments, theta=theta, width=[width*0.92]*segments, base=[r_inner]*segments,
                               marker_color=inactive_cols, marker_line_color="rgba(255,255,255,0.05)", marker_line_width=1, hoverinfo="skip"))
@@ -364,7 +365,7 @@ def pareto_chart(df: pd.DataFrame, col: str, title: str):
         marker=dict(size=8, color="#FFD95C")
     ))
     fig.update_layout(
-        title=title, paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(10,15,31,0.55)",
+        title=title, paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(10,15,31,0.15)",
         font=dict(color="white"), margin=dict(l=10, r=10, t=45, b=10), height=380,
         xaxis=dict(title="", tickangle=0, showgrid=False),
         yaxis=dict(title="Quantidade", showgrid=True, gridcolor="rgba(255,255,255,0.08)"),
@@ -416,7 +417,6 @@ def load_from_repo() -> dict:
     else:
         table["Atrasada_calc"] = (table["Prazo_dt"].notna()) & (table["Prazo_dt"] < today)
     table["Dias_para_prazo"] = table["Prazo_dt"].apply(lambda d: (d - today).days if pd.notna(d) else None)
-
     meta = {}
     for _, r in raw.head(30).iterrows():
         left = str(r.iloc[1]) if len(r) > 1 else ""
