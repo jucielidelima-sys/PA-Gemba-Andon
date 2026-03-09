@@ -1,4 +1,4 @@
-st.markdown(f"""
+st.markdown("""
 <style>
 html, body, .stApp,
 [data-testid="stAppViewContainer"],
