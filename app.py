@@ -13,15 +13,16 @@ st.set_page_config(page_title="PA • Gemba Board ANDON", layout="wide")
 st.markdown("""
 <style>
 
-/* FUNDO TOTALMENTE PRETO */
+/* FUNDO PRETO AZULADO INDUSTRIAL */
 html, body, .stApp,
 [data-testid="stAppViewContainer"],
 [data-testid="stHeader"],
 [data-testid="stToolbar"]{
-  background:#000000 !important;
+  background:#0A0F1F !important;
   color: rgba(255,255,255,0.96) !important;
 }
 
+/* HEADER */
 [data-testid="stHeader"]{
   background:transparent !important;
 }
@@ -29,13 +30,16 @@ html, body, .stApp,
 /* SIDEBAR */
 [data-testid="stSidebar"],
 [data-testid="stSidebarContent"]{
-  background:#000000 !important;
+  background:#0D1428 !important;
   border-right:1px solid rgba(255,255,255,0.10);
 }
 
 /* VARIÁVEIS VISUAIS */
 :root{
-  --line: rgba(255,255,255,0.12);
+  --bg: #0A0F1F;
+  --panel: #121A33;
+
+  --line: rgba(255,255,255,0.10);
   --muted: rgba(255,255,255,0.70);
   --muted2: rgba(255,255,255,0.60);
 
@@ -46,9 +50,14 @@ html, body, .stApp,
   --info:#40C4FF;
 }
 
-/* DATAFRAME PRETO */
+/* CONTAINER */
+.block-container{
+  max-width:1750px;
+}
+
+/* DATAFRAME */
 div[data-testid="stDataFrame"]{
-  background:#000000 !important;
+  background:#0A0F1F !important;
   border:1px solid rgba(255,255,255,0.12) !important;
   border-radius:14px !important;
 }
@@ -59,31 +68,45 @@ div[data-testid="stDataFrame"] .ag-body-viewport,
 div[data-testid="stDataFrame"] .ag-header,
 div[data-testid="stDataFrame"] .ag-center-cols-container,
 div[data-testid="stDataFrame"] .ag-row{
-  background:#000000 !important;
+  background:#0A0F1F !important;
+}
+
+div[data-testid="stDataFrame"] .ag-row:hover{
+  background:#121A33 !important;
+}
+
+/* TITLE BAR */
+.titlebar{
+  border:1px solid rgba(255,255,255,0.10);
+  border-radius:18px;
+  padding:16px 18px;
+  background:
+  radial-gradient(900px 260px at 0% 0%, rgba(0,229,255,0.18), rgba(0,0,0,0)),
+  linear-gradient(180deg, #121A33, #0A0F1F);
 }
 
 /* CARDS */
 .card{
-  border:1px solid rgba(255,255,255,0.14);
+  border:1px solid rgba(255,255,255,0.12);
   border-radius:16px;
   padding:12px;
-  background: rgba(20,20,20,0.65);
+  background:#121A33;
 }
 
 /* KPIs */
 .kpi{
-  border:1px solid var(--line);
+  border:1px solid rgba(255,255,255,0.10);
   border-radius:16px;
-  padding:14px 16px;
-  background: rgba(20,20,20,0.60);
+  padding:14px;
+  background:#121A33;
 }
 
-/* HUD (VELOCÍMETRO) */
+/* HUD VELOCÍMETRO */
 .hud{
   border-radius:22px;
-  border:1px solid rgba(255,255,255,0.14);
-  background: rgba(20,20,20,0.60);
-  backdrop-filter: blur(12px);
+  border:1px solid rgba(255,255,255,0.10);
+  background:#121A33;
+  backdrop-filter: blur(10px);
 }
 
 </style>
