@@ -10,99 +10,84 @@ DATA_PATH = "data/pa.xlsx"  # fonte fixa (sem upload)
 
 st.set_page_config(page_title="PA • Gemba Board ANDON", layout="wide")
 
-st.markdown(
-    """
+st.markdown("""
 <style>
+
+/* FUNDO TOTALMENTE PRETO */
+html, body, .stApp,
+[data-testid="stAppViewContainer"],
+[data-testid="stHeader"],
+[data-testid="stToolbar"]{
+  background:#000000 !important;
+  color: rgba(255,255,255,0.96) !important;
+}
+
+[data-testid="stHeader"]{
+  background:transparent !important;
+}
+
+/* SIDEBAR */
+[data-testid="stSidebar"],
+[data-testid="stSidebarContent"]{
+  background:#000000 !important;
+  border-right:1px solid rgba(255,255,255,0.10);
+}
+
+/* VARIÁVEIS VISUAIS */
 :root{
-  --bg:#070b16;
-  --panel:#0b1226;
-  --panel2:#0f1a38;
-  --line: rgba(255,255,255,0.10);
-  --text:#e5e7eb;
-  --muted:#a7b1c2;
+  --line: rgba(255,255,255,0.12);
+  --muted: rgba(255,255,255,0.70);
+  --muted2: rgba(255,255,255,0.60);
 
-  --neon:#00e5ff;   /* ciano */
-  --safety:#ffd60a; /* amarelo segurança */
-  --good:#00c853;   /* verde andon */
-  --warn:#ff9100;   /* laranja */
-  --bad:#ff1744;    /* vermelho */
-  --info:#40c4ff;   /* azul */
+  --neon:#00E5FF;
+  --good:#00C853;
+  --warn:#FF9100;
+  --bad:#FF1744;
+  --info:#40C4FF;
 }
 
-.block-container{padding-top:1.0rem; padding-bottom:2.2rem; max-width: 1500px;}
-section[data-testid="stSidebar"]{border-right:1px solid var(--line);}
+/* DATAFRAME PRETO */
+div[data-testid="stDataFrame"]{
+  background:#000000 !important;
+  border:1px solid rgba(255,255,255,0.12) !important;
+  border-radius:14px !important;
+}
 
-.titlebar{
-  border:1px solid var(--line);
-  border-radius:18px;
-  padding:16px 18px;
-  background:
-    radial-gradient(900px 260px at 0% 0%, rgba(0,229,255,0.18), rgba(0,0,0,0)),
-    radial-gradient(700px 220px at 100% 0%, rgba(255,214,10,0.16), rgba(0,0,0,0)),
-    linear-gradient(180deg, rgba(15,26,56,0.98), rgba(7,11,22,0.90));
-  position: relative;
-  overflow:hidden;
+div[data-testid="stDataFrame"] .ag-root-wrapper,
+div[data-testid="stDataFrame"] .ag-root,
+div[data-testid="stDataFrame"] .ag-body-viewport,
+div[data-testid="stDataFrame"] .ag-header,
+div[data-testid="stDataFrame"] .ag-center-cols-container,
+div[data-testid="stDataFrame"] .ag-row{
+  background:#000000 !important;
 }
-.titlebar:after{
-  content:"";
-  position:absolute;
-  left:-50%;
-  top:0;
-  width:200%;
-  height:2px;
-  background: linear-gradient(90deg, rgba(0,229,255,0), rgba(0,229,255,0.9), rgba(0,229,255,0));
-  opacity: 0.75;
-}
-.big-title{
-  font-size:30px;
-  font-weight:1000;
-  letter-spacing:0.6px;
-  text-transform: uppercase;
-  text-shadow: 0 0 18px rgba(0,229,255,0.22);
-}
-.subtitle{
-  color:var(--muted);
-  font-size:12px;
-  margin-top:4px;
-}
-.badge{
-  display:inline-flex; align-items:center; gap:8px;
-  padding:6px 10px; border-radius:999px; font-size:12px;
-  border:1px solid var(--line); color:var(--muted);
-  background: rgba(0,0,0,0.20);
-}
-.dot{width:9px; height:9px; border-radius:999px; display:inline-block;}
-.dot.good{background:var(--good);}
-.dot.warn{background:var(--warn);}
-.dot.bad{background:var(--bad);}
-.dot.info{background:var(--info);}
-.dot.safety{background:var(--safety);}
-.dot.neon{background:var(--neon); box-shadow: 0 0 10px rgba(0,229,255,0.6);}
 
+/* CARDS */
+.card{
+  border:1px solid rgba(255,255,255,0.14);
+  border-radius:16px;
+  padding:12px;
+  background: rgba(20,20,20,0.65);
+}
+
+/* KPIs */
 .kpi{
   border:1px solid var(--line);
   border-radius:16px;
   padding:14px 16px;
-  background:
-    radial-gradient(500px 180px at 0% 0%, rgba(0,229,255,0.10), rgba(0,0,0,0)),
-    linear-gradient(180deg, rgba(255,214,10,0.08), rgba(0,0,0,0));
+  background: rgba(20,20,20,0.60);
 }
-.kpi .label{color:var(--muted); font-size:12px;}
-.kpi .value{font-size:28px; font-weight:1000; margin-top:4px;}
-.kpi .sub{color:var(--muted); font-size:12px; margin-top:4px;}
 
-.card{
-  border:1px solid var(--line);
-  border-radius:16px;
-  padding:12px 12px;
-  background: rgba(15,26,56,0.55);
+/* HUD (VELOCÍMETRO) */
+.hud{
+  border-radius:22px;
+  border:1px solid rgba(255,255,255,0.14);
+  background: rgba(20,20,20,0.60);
+  backdrop-filter: blur(12px);
 }
-.card-title{font-weight:900; margin-bottom:6px;}
-.card-small{color:var(--muted); font-size:12px;}
+
 </style>
-""",
-    unsafe_allow_html=True,
-)
+""", unsafe_allow_html=True)
 
 STATUS_MAP = {
     "executado": "Executado",
