@@ -476,7 +476,15 @@ def pareto_chart(df: pd.DataFrame, col: str, title: str):
         )
 
     fig.update_layout(
-        title=title,
+        title=dict(
+    text=title,
+    font=dict(
+        size=20,
+        color="white",
+        family="Arial Black"
+    ),
+    x=0.02
+),
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(35,40,48,0.18)",   # grafite leve
         font=dict(color="white", size=12),
