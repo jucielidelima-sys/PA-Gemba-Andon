@@ -410,15 +410,110 @@ def pareto_chart(df: pd.DataFrame, col: str, title: str):
     fig.add_trace(go.Bar(x=g[col], y=g["Qtd"], name="Qtd", marker=dict(color=AI_BLUE, line=dict(color="#BFF3FF", width=1.2)), opacity=0.96))
     fig.add_trace(go.Scatter(x=g[col], y=g["Acumulado_%"], name="Acumulado %", mode="lines+markers", yaxis="y2",
                              line=dict(color="#FFE06A", width=3), marker=dict(size=8, color="#FFE06A")))
+def pareto_chart(df: pd.DataFrame, col: str, title: str):
+    if col not in df.columns or len(df) == 0:
+        return None
+
+    g = (
+        df.groupby(col, dropna=False)
+        .size()
+        .reset_index(name="Qtd")
+        .sort_values("Qtd", ascending=False)
+    )
+    g[col] = g[col].fillna("—").astype(str)
+
+    total = g["Qtd"].sum()
+    g["Acumulado_%"] = (g["Qtd"].cumsum() / total) * 100 if total else 0
+
+    fig = go.Figure()
+
+    # BARRAS - CINZA GRAFITE / PADRÃO IA
+    fig.add_trace(
+        go.Bar(
+            x=g[col],
+            y=g["Qtd"],
+            name="Qtd",
+            marker=dict(
+                color="#5F6672",          # cinza grafite
+                line=dict(color="#AEB6C2", width=1.2)
+            ),
+            opacity=0.96,
+            text=g["Qtd"],
+            textposition="outside",
+            textfont=dict(color="white", size=12),
+        )
+    )
+
+    # LINHA ACUMULADA
+    fig.add_trace(
+        go.Scatter(
+            x=g[col],
+            y=g["Acumulado_%"],
+            name="Acumulado %",
+            mode="lines+markers",
+            yaxis="y2",
+            line=dict(color="#FFD54A", width=3),   # amarelo tecnológico
+            marker=dict(size=8, color="#FFD54A"),
+        )
+    )
+
     if pareto_bg_uri:
-        fig.add_layout_image(dict(source=pareto_bg_uri, xref="paper", yref="paper", x=1.0, y=1.0, sizex=1.0, sizey=1.0,
-                                  xanchor="right", yanchor="top", sizing="stretch", opacity=0.28, layer="below"))
-    fig.update_layout(title=title, paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(60,68,80,0.12)",
-                      font=dict(color="white"), margin=dict(l=10, r=10, t=45, b=10), height=380,
-                      xaxis=dict(title="", tickangle=0, showgrid=False),
-                      yaxis=dict(title="Quantidade", showgrid=True, gridcolor="rgba(255,255,255,0.08)"),
-                      yaxis2=dict(title="Acumulado %", overlaying="y", side="right", range=[0, 100], showgrid=False, ticksuffix="%"),
-                      legend=dict(orientation="h", y=1.12, x=0))
+        fig.add_layout_image(
+            dict(
+                source=pareto_bg_uri,
+                xref="paper",
+                yref="paper",
+                x=1.0,
+                y=1.0,
+                sizex=1.0,
+                sizey=1.0,
+                xanchor="right",
+                yanchor="top",
+                sizing="stretch",
+                opacity=0.12,   # menor opacidade para não atrapalhar leitura
+                layer="below",
+            )
+        )
+
+    fig.update_layout(
+        title=title,
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(35,40,48,0.18)",   # grafite leve
+        font=dict(color="white", size=12),
+        margin=dict(l=10, r=10, t=50, b=85),
+        height=420,
+        legend=dict(
+            orientation="h",
+            y=1.10,
+            x=0,
+            font=dict(size=11)
+        ),
+        xaxis=dict(
+            title="",
+            tickangle=-20,                 # melhora leitura
+            showgrid=False,
+            tickfont=dict(size=11, color="white"),
+            automargin=True,
+        ),
+        yaxis=dict(
+            title="Quantidade",
+            showgrid=True,
+            gridcolor="rgba(255,255,255,0.08)",
+            tickfont=dict(size=11, color="white"),
+            title_font=dict(color="white"),
+        ),
+        yaxis2=dict(
+            title="Acumulado %",
+            overlaying="y",
+            side="right",
+            range=[0, 100],
+            showgrid=False,
+            ticksuffix="%",
+            tickfont=dict(size=11, color="white"),
+            title_font=dict(color="white"),
+        ),
+    )
+
     return fig
 
 
