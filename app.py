@@ -74,61 +74,46 @@ html, body, .stApp,
   padding-top: 1rem;
   padding-bottom: 2rem;
   max-width: 1850px;
-}
-
-div[data-baseweb="select"]{
-  background:#FFFFFF !important;
-  border-radius:10px !important;
-}
-div[data-baseweb="select"] > div{
-  background:#FFFFFF !important;
-  border:1px solid #FFFFFF !important;
-  color:#000000 !important;
-}
-div[data-baseweb="select"] *{
-  color:#000000 !important;
-}
-ul[role="listbox"]{
-  background:#FFFFFF !important;
-  border:1px solid #FFFFFF !important;
-}
-ul[role="listbox"] li{
-  background:#FFFFFF !important;
-  color:#000000 !important;
-}
-ul[role="listbox"] li:hover{
-  background:#EDEDED !important;
-  color:#000000 !important;
-}
-span[data-baseweb="tag"]{
-  background:#FFFFFF !important;
-  color:#000000 !important;
-  border:1px solid #FFFFFF !important;
-  font-weight:700 !important;
-}
-span[data-baseweb="tag"] span{
-  color:#000000 !important;
-}
-span[data-baseweb="tag"] svg{
-  fill:#000000 !important;
-  color:#000000 !important;
-}
-}
+}}
 
 div[data-baseweb="select"]{{
-  background: linear-gradient(180deg,#868d98,#646b76) !important;
+  background:#FFFFFF !important;
   border-radius:10px !important;
 }}
 div[data-baseweb="select"] > div{{
-  background: linear-gradient(180deg,#868d98,#646b76) !important;
-  border:1px solid rgba(255,255,255,0.10) !important;
+  background:#FFFFFF !important;
+  border:1px solid #FFFFFF !important;
+  color:#000000 !important;
+}}
+div[data-baseweb="select"] *{{
+  color:#000000 !important;
+}}
+ul[role="listbox"]{{
+  background:#FFFFFF !important;
+  border:1px solid #FFFFFF !important;
+}}
+ul[role="listbox"] li{{
+  background:#FFFFFF !important;
+  color:#000000 !important;
+}}
+ul[role="listbox"] li:hover{{
+  background:#EDEDED !important;
+  color:#000000 !important;
 }}
 span[data-baseweb="tag"]{{
-  background:#49CFFF !important;
-  color:#06121d !important;
-  border:none !important;
+  background:#FFFFFF !important;
+  color:#000000 !important;
+  border:1px solid #FFFFFF !important;
   font-weight:700 !important;
 }}
+span[data-baseweb="tag"] span{{
+  color:#000000 !important;
+}}
+span[data-baseweb="tag"] svg{{
+  fill:#000000 !important;
+  color:#000000 !important;
+}}
+
 
 div[data-testid="stDataFrame"]{{
   background: rgba(82, 88, 98, 0.88) !important;
