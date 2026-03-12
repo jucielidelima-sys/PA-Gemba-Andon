@@ -730,13 +730,6 @@ meta = payload["meta"]
 table = payload["table"].copy()
 excel_path_used = payload.get("excel_path", "—")
 
-with st.sidebar:
-    st.markdown("### ⚙️ Filtros")
-    st.markdown(pill("neon", "Fonte fixa: data/pa.xlsx"), unsafe_allow_html=True)
-    st.caption("Atualize o arquivo no GitHub e o painel lê sempre o último.")
-    st.caption(f"📌 Lendo: {excel_path_used}")
-    st.divider()
-
 
 def safe_unique(col):
     if col in table.columns:
